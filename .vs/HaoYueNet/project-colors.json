@@ -1,0 +1,36 @@
+{
+  "Version": 1,
+  "ProjectMap": {
+    "96350e74-b813-4138-a9e8-3cc3cbf71343": {
+      "ProjectGuid": "96350e74-b813-4138-a9e8-3cc3cbf71343",
+      "DisplayName": "ClientNetwork",
+      "ColorIndex": 0
+    },
+    "506cfdce-c2b6-42d1-aa92-b09223fa53ed": {
+      "ProjectGuid": "506cfdce-c2b6-42d1-aa92-b09223fa53ed",
+      "DisplayName": "HaoYueNet.ServerNetwork",
+      "ColorIndex": 1
+    },
+    "5792a0c9-3f6d-48a6-855f-ce04dba33ebe": {
+      "ProjectGuid": "5792a0c9-3f6d-48a6-855f-ce04dba33ebe",
+      "DisplayName": "ServerNetwork",
+      "ColorIndex": 2
+    },
+    "22ed65d3-e2fb-49e4-bdf5-eb2a70774c2e": {
+      "ProjectGuid": "22ed65d3-e2fb-49e4-bdf5-eb2a70774c2e",
+      "DisplayName": "HaoYueNet.ServerNetwork",
+      "ColorIndex": 3
+    },
+    "c75bfb8d-294a-43f0-8b2e-d37dba12be8b": {
+      "ProjectGuid": "c75bfb8d-294a-43f0-8b2e-d37dba12be8b",
+      "DisplayName": "ClientNetwork",
+      "ColorIndex": 4
+    },
+    "696f6aae-2d41-48f7-8fcd-e95cfe2a6519": {
+      "ProjectGuid": "696f6aae-2d41-48f7-8fcd-e95cfe2a6519",
+      "DisplayName": "HaoYueNet.ClientNetwork",
+      "ColorIndex": 5
+    }
+  },
+  "NextColorIndex": 6
+}
