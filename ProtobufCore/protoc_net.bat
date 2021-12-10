@@ -1,0 +1,2 @@
+call protoc proto\protobuf_HunterNetCore.proto --descriptor_set_out=Desc\protobuf_HunterNetCore.protodesc
+pause

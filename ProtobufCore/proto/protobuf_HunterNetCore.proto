@@ -1,0 +1,16 @@
+syntax = "proto3";
+package HunterProtobufCore;
+option optimize_for = SPEED;
+
+//上行
+message HunterNet_C2S {
+    int32 HunterNetCore_CmdID = 1;
+    bytes HunterNetCore_Data = 2;
+}
+
+//下行
+message HunterNet_S2C {
+    int32 HunterNetCore_CmdID = 1;
+	int32 HunterNetCore_ERRORCode = 2;
+    bytes HunterNetCore_Data = 3;
+}

@@ -1,0 +1,267 @@
+
+†3
+proto/KyMsgProtocol.protoCC"*
+SystemErrorReponse
+State (RState"F
+SystemErrorInfoReponse
+State (RState
+ErrMsg (	RErrMsg"§
+CreateRoles
+Acc (	RAcc
+UserName (	RUserName
+Sex (RSex
+ZoneID (RZoneID
+occup (Roccup*
+PlatformDataList (	RPlatformDataList"Z
+CreateRolesReponse
+State (RState.
+SubRoleinfo (2.CC.RoleinfoRSubRoleinfo"é	
+Roleinfo
+JobID (RJobID
+CurLv (RCurLv
+CurExp (RCurExp
+	NextLvExp (R	NextLvExp
+POW (RPOW
+AGL (RAGL
+CON (RCON
+INT (RINT
+NickName	 (	RNickName
+Sex
+ (RSex
+Position (	RPosition
+Regtime (	RRegtime
+Lasttime (	RLasttime
+Isdel (RIsdel
+Deltime (	RDeltime
+RoleID (RRoleID
+MapCode (RMapCode$
+RoleDirection (RRoleDirection
+PosX (RPosX
+PosY (RPosY
+LifeV (RLifeV
+MaxLifeV (RMaxLifeV
+MagicV (RMagicV
+	MaxMagicV (R	MaxMagicV
+ZoneID (RZoneID
+RolePic (RRolePic
+KillLv (RKillLv
+Vitality (RVitality 
+VitalityTop (RVitalityTop
+Vigor (RVigor
+VigorTop (RVigorTop
+Mate  (RMate
+Faction! (RFaction
+Dianjuan" (RDianjuan
+Yuanbao# (RYuanbao
+Money1$ (RMoney1
+
+Reputation% (R
+Reputation
+Prestige& (RPrestige"
+Contribution' (RContribution&
+Transmigration( (RTransmigration
+PKMode) (RPKMode$
+TeacherPlayer* (RTeacherPlayer"
+AbilityPoint+ (RAbilityPoint 
+MyIntroduce, (RMyIntroduce3
+SkillInfoList- (2.CC.SkillInfoRSkillInfoList$
+isFlashplayer. (RisFlashplayer"s
+	SkillInfo
+DBID (RDBID
+SkillID (RSkillID
+
+SkillLevel (R
+SkillLevel
+UsedNum (RUsedNum"8
+GetRolesList
+Acc (	RAcc
+ZoneID (RZoneID"[
+GetRolesListReponse
+State (RState.
+SubRoleinfo (2.CC.RoleinfoRSubRoleinfo"7
+InitialGame
+Acc (	RAcc
+RoleID (RRoleID"Z
+InitialGameReponse
+State (RState.
+SubRoleinfo (2.CC.RoleinfoRSubRoleinfo""
+PlayGame
+RoleID (RRoleID")
+PlayGameReponse
+RoleID (RRoleID"°
+
+SpriteMove
+RoleID (RRoleID
+MapCode (RMapCode
+action (Raction
+toX (RtoX
+toY (RtoY
+	extAction (R	extAction
+fromX (RfromX
+fromY (RfromY&
+startMoveTicks	 (RstartMoveTicks
+
+pathString
+ (	R
+pathString"
+targetRoleID (RtargetRoleID"è
+SpriteMovePosition
+RoleID (RRoleID
+MapCode (RMapCode
+ToMapX (RToMapX
+ToMapY (RToMapY
+
+ToDiection (R
+ToDiection 
+clientTicks (RclientTicks
+action (Raction
+TryRun (RTryRun"E
+SpriteMovePositionReponse
+RoleID (RRoleID
+xxx (Rxxx"ã
+SpriteExchangeMap
+RoleID (RRoleID
+
+TeleportID (R
+TeleportID
+
+NewMapCode (R
+NewMapCode
+	ToNewMapX (R	ToNewMapX
+	ToNewMapY (R	ToNewMapY$
+ToNewDiection (RToNewDiection
+State (RState"J
+OthersLeaveMap
+RoleID (RRoleID 
+SpriteTypes (RSpriteTypes"œ
+RoleInfoDataMini
+RoleID (RRoleID
+RoleName (	RRoleName
+RoleSex (RRoleSex
+
+Occupation (R
+Occupation
+Level (RLevel
+MapCode (RMapCode
+PosX (RPosX
+PosY (RPosY$
+RoleDirection	 (RRoleDirection
+LifeV
+ (RLifeV
+MaxLifeV (RMaxLifeV
+MagicV (RMagicV
+	MaxMagicV (R	MaxMagicV
+ZoneID (RZoneID
+	SkillList (R	SkillList"ÿ
+MonsterInfoData
+RoleID (RRoleID
+RoleName (	RRoleName
+RoleSex (RRoleSex
+Level (RLevel
+
+Experience (R
+Experience
+PosX (RPosX
+PosY (RPosY$
+RoleDirection (RRoleDirection
+LifeV	 (RLifeV
+MaxLifeV
+ (RMaxLifeV
+MagicV (RMagicV
+	MaxMagicV (R	MaxMagicV$
+EquipmentBody (REquipmentBody 
+ExtensionID (RExtensionID 
+MonsterType (RMonsterType"
+MasterRoleID (RMasterRoleID$
+AiControlType (RAiControlType 
+AnimalSound (	RAnimalSound"
+MonsterLevel (RMonsterLevel"
+ZhongDuStart (RZhongDuStart&
+ZhongDuSeconds (RZhongDuSeconds
+
+FaintStart (R
+FaintStart"
+FaintSeconds (RFaintSeconds(
+BattleWitchSide (RBattleWitchSide"µ
+ProAttackData
+roleID (RroleID
+roleX (RroleX
+roleY (RroleY
+	magicCode (R	magicCode7
+AttackObjList (2.CC.AttackObjInfoRAttackObjList 
+WeaponsType (RWeaponsTypeA
+PointAttackdoube (2.CC.PointAttackDoubleRPointAttackdoube$
+BallisticGUID (	RBallisticGUID"5
+PointAttack
+PosX (RPosX
+PosY (RPosY";
+PointAttackDouble
+PosX (RPosX
+PosY (RPosY"•
+AttackObjInfo
+enemy (Renemy
+enemyX (RenemyX
+enemyY (RenemyY
+
+realEnemyX (R
+realEnemyX
+
+realEnemyY (R
+realEnemyY"é
+ProAttackDataReponse$
+attackerLevel (RattackerLevel&
+attackerRoleID (RattackerRoleID
+SkillID (RSkillID8
+AttackObjList (2.CC.AttackDataInfoRAttackObjList"
+attackerPosX (RattackerPosX"
+attackerPosY (RattackerPosYA
+PointAttackdoube (2.CC.PointAttackDoubleRPointAttackdoube$
+BallisticGUID (	RBallisticGUID"ö
+AttackDataInfo$
+injuredRoleID (RinjuredRoleID
+burst (Rburst
+injure (Rinjure$
+newExperience (RnewExperience,
+currentExperience (RcurrentExperience
+newLevel (RnewLevel"
+MerlinInjuer (RMerlinInjuer
+
+MerlinType (R
+MerlinType(
+injuredRoleLife	 (RinjuredRoleLife0
+injuredRoleMaxLifeV
+ (RinjuredRoleMaxLifeV*
+injuredRoleMagic (RinjuredRoleMagic2
+injuredRoleMaxMagicV (RinjuredRoleMaxMagicV 
+injuredType (RinjuredType"P
+
+DBAddSkill
+RoleID (RRoleID
+SkillID (RSkillID
+Lvl (RLvl"=
+DBAddSkillReponse
+State (RState
+DBID (RDBID"°
+AttackReadyData
+
+AttackerID (R
+AttackerID
+SkillID (RSkillIDA
+PointAttackdoube (2.CC.PointAttackDoubleRPointAttackdoube 
+NextSkillID (	RNextSkillID"5
+SpriteMonsterDead 
+MonsterList (RMonsterList"Þ
+PLAYBallisticData
+roleID (RroleID
+roleX (RroleX
+roleY (RroleY
+	magicCode (R	magicCodeA
+PointAttackdoube (2.CC.PointAttackDoubleRPointAttackdoube$
+BallisticGUID (	RBallisticGUID"¶
+WorldEffectData
+roleID (RroleID
+roleX (RroleX
+roleY (RroleY
+	magicCode (R	magicCodeA
+PointAttackdoube (2.CC.PointAttackDoubleRPointAttackdoube"
+OtherEffectDatabproto3
