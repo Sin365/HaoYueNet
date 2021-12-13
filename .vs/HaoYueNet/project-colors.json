@@ -30,7 +30,27 @@
       "ProjectGuid": "696f6aae-2d41-48f7-8fcd-e95cfe2a6519",
       "DisplayName": "HaoYueNet.ClientNetwork",
       "ColorIndex": 5
+    },
+    "33d77124-2d10-4799-b432-dcc8f0f3d1ca": {
+      "ProjectGuid": "33d77124-2d10-4799-b432-dcc8f0f3d1ca",
+      "DisplayName": "SimpleServer",
+      "ColorIndex": 6
+    },
+    "c558aca4-e59e-4f4d-94b7-2b78da272cf3": {
+      "ProjectGuid": "c558aca4-e59e-4f4d-94b7-2b78da272cf3",
+      "DisplayName": "SimpleClient",
+      "ColorIndex": 7
+    },
+    "a2cad164-0816-4d1d-9793-1b1f398c9d29": {
+      "ProjectGuid": "a2cad164-0816-4d1d-9793-1b1f398c9d29",
+      "DisplayName": "Simple",
+      "ColorIndex": 8
+    },
+    "5559b94a-da9e-4cf7-b799-2bcaa1f11f49": {
+      "ProjectGuid": "5559b94a-da9e-4cf7-b799-2bcaa1f11f49",
+      "DisplayName": "SimpleServer",
+      "ColorIndex": 9
     }
   },
-  "NextColorIndex": 6
+  "NextColorIndex": 10
 }

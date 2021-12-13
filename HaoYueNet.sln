@@ -11,9 +11,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HaoYueNet.ServerNetwork", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HaoYueNet.ClientNetwork", "NetLib\HaoYueNet.ClientNetwork\HaoYueNet.ClientNetwork.csproj", "{696F6AAE-2D41-48F7-8FCD-E95CFE2A6519}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleClient", "Simple\SimpleClient\SimpleClient.csproj", "{C558ACA4-E59E-4F4D-94B7-2B78DA272CF3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleClient", "Simple\SimpleClient\SimpleClient.csproj", "{C558ACA4-E59E-4F4D-94B7-2B78DA272CF3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleServer", "Simple\SimpleServer\SimpleServer.csproj", "{5559B94A-DA9E-4CF7-B799-2BCAA1F11F49}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleServer", "Simple\SimpleServer\SimpleServer.csproj", "{5559B94A-DA9E-4CF7-B799-2BCAA1F11F49}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HaoYueNet.ClientNetworkNet4x", "NetLib\HaoYueNet.ClientNetworkNet4x\HaoYueNet.ClientNetworkNet4x.csproj", "{27E139E2-F5F5-47DF-99D8-04DC7EBEBEEC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,6 +39,10 @@ Global
 		{5559B94A-DA9E-4CF7-B799-2BCAA1F11F49}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5559B94A-DA9E-4CF7-B799-2BCAA1F11F49}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5559B94A-DA9E-4CF7-B799-2BCAA1F11F49}.Release|Any CPU.Build.0 = Release|Any CPU
+		{27E139E2-F5F5-47DF-99D8-04DC7EBEBEEC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27E139E2-F5F5-47DF-99D8-04DC7EBEBEEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27E139E2-F5F5-47DF-99D8-04DC7EBEBEEC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27E139E2-F5F5-47DF-99D8-04DC7EBEBEEC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -46,6 +52,7 @@ Global
 		{696F6AAE-2D41-48F7-8FCD-E95CFE2A6519} = {D0066C06-A89A-4E05-80E0-D8232FB0FF3C}
 		{C558ACA4-E59E-4F4D-94B7-2B78DA272CF3} = {A2CAD164-0816-4D1D-9793-1B1F398C9D29}
 		{5559B94A-DA9E-4CF7-B799-2BCAA1F11F49} = {A2CAD164-0816-4D1D-9793-1B1F398C9D29}
+		{27E139E2-F5F5-47DF-99D8-04DC7EBEBEEC} = {D0066C06-A89A-4E05-80E0-D8232FB0FF3C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {22107F03-013F-4871-AC8E-F082694E2679}
