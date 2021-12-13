@@ -50,7 +50,32 @@
       "ProjectGuid": "5559b94a-da9e-4cf7-b799-2bcaa1f11f49",
       "DisplayName": "SimpleServer",
       "ColorIndex": 9
+    },
+    "895995de-556a-437e-8e6f-1a1fe8736386": {
+      "ProjectGuid": "895995de-556a-437e-8e6f-1a1fe8736386",
+      "DisplayName": "HaoYueNet.ClientNetworkNet4x",
+      "ColorIndex": 10
+    },
+    "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3": {
+      "ProjectGuid": "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3",
+      "DisplayName": "杂项文件",
+      "ColorIndex": -1
+    },
+    "27e139e2-f5f5-47df-99d8-04dc7ebebeec": {
+      "ProjectGuid": "27e139e2-f5f5-47df-99d8-04dc7ebebeec",
+      "DisplayName": "HaoYueNet.ClientNetworkNet4x",
+      "ColorIndex": 11
+    },
+    "d0066c06-a89a-4e05-80e0-d8232fb0ff3c": {
+      "ProjectGuid": "d0066c06-a89a-4e05-80e0-d8232fb0ff3c",
+      "DisplayName": "NetLib",
+      "ColorIndex": 12
+    },
+    "a741610f-29b9-4f0e-9a3d-0b3e1318f031": {
+      "ProjectGuid": "a741610f-29b9-4f0e-9a3d-0b3e1318f031",
+      "DisplayName": "HaoYueNet.ClientNetworkNet4x",
+      "ColorIndex": 13
     }
   },
-  "NextColorIndex": 10
+  "NextColorIndex": 14
 }

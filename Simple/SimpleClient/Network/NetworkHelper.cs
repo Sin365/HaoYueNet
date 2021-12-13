@@ -17,7 +17,7 @@ namespace SimpleClient
             //指定接收服务器数据事件
             OnDataCallBack += GetDataCallBack;
             //断开连接
-            OnClose += Close;
+            OnClose += OnConnectClose;
             //网络库调试信息输出事件，用于打印连接断开，收发事件
             OnLogOut += NetworkDeBugLog;
             OnConnected += NetworkConnected;
@@ -50,9 +50,8 @@ namespace SimpleClient
         /// <param name="ERRCODE">错误编号</param>
         /// <param name="data">业务数据</param>
         public void GetDataCallBack(int CMDID, int ERRCODE, byte[] data)
-
         {
-            Console.WriteLine("收到消息 CMDID =>" + CMDID + " ERRCODE =>" + ERRCODE + " 数据长度=>" + data.Length);
+            NetworkDeBugLog("收到消息 CMDID =>" + CMDID + " ERRCODE =>" + ERRCODE + " 数据长度=>" + data.Length);
 
             try
             {
@@ -63,7 +62,7 @@ namespace SimpleClient
             }
             catch (Exception ex)
             {
-                Console.WriteLine("逻辑处理错误：" + ex.ToString());
+                NetworkDeBugLog("逻辑处理错误：" + ex.ToString());
             }
 
         }
@@ -71,9 +70,9 @@ namespace SimpleClient
         /// <summary>
         /// 关闭连接
         /// </summary>
-        public void Close()
+        public void OnConnectClose()
         {
-            Console.WriteLine("断开连接");
+            NetworkDeBugLog("OnConnectClose");
         }
     }
 }

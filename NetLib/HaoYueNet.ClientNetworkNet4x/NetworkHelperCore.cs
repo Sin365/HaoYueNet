@@ -210,9 +210,9 @@ namespace HaoYueNet.ClientNetworkNet4x
             LogOut("关闭心跳包计数");
             _heartTimer.Enabled = false;
             LogOut("关闭连接");
-            OnClose();
             //关闭Socket连接
             client.Close();
+            OnClose();
         }
 
 
