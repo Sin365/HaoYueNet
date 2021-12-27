@@ -37,7 +37,7 @@ namespace HaoYueNet.ServerNetwork
         /// 心跳包计数器
         /// </summary>
         private System.Timers.Timer _heartTimer;
-        
+
         public int m_maxConnectNum;    //最大连接数  
         public int m_revBufferSize;    //最大接收字节数  
         public BufferManager m_bufferManager;
@@ -170,7 +170,7 @@ namespace HaoYueNet.ServerNetwork
                 listenSocket.Listen(m_maxConnectNum);
                 // post accepts on the listening socket  
                 StartAccept(null);
-                
+
                 _heartTimer = new System.Timers.Timer();
                 _heartTimer.Interval = TimerInterval;
                 _heartTimer.Elapsed += CheckUpdatetimer_Elapsed;
@@ -297,7 +297,7 @@ namespace HaoYueNet.ServerNetwork
             if (e.SocketError == SocketError.OperationAborted) return;
             StartAccept(e);
         }
-        
+
         void IO_Completed(object sender, SocketAsyncEventArgs e)
         {
             // determine which type of operation just completed and call the associated handler  
@@ -318,19 +318,18 @@ namespace HaoYueNet.ServerNetwork
         void IO_Completed2(object sender, SocketAsyncEventArgs e)
         {
             // determine which type of operation just completed and call the associated handler  
-
-            switch (e.LastOperation)
-            {
-                case SocketAsyncOperation.Receive:
-                    ProcessReceive(e);
-                    break;
-                case SocketAsyncOperation.Send:
-                    ProcessSend2(e);
-                    break;
-                default:
-                    throw new ArgumentException("The last operation completed on the socket was not a receive or send");
-            }
-
+            Console.WriteLine("就他妈从来没进过");
+            //switch (e.LastOperation)
+            //{
+            //    case SocketAsyncOperation.Receive:
+            //        ProcessReceive(e);
+            //        break;
+            //    case SocketAsyncOperation.Send:
+            //        ProcessSend2(e);
+            //        break;
+            //    default:
+            //        throw new ArgumentException("The last operation completed on the socket was not a receive or send");
+            //}
         }
 
         // This method is invoked when an asynchronous receive operation completes.   
@@ -383,9 +382,9 @@ namespace HaoYueNet.ServerNetwork
                         //将数据包交给后台处理,这里你也可以新开个线程来处理.加快速度.  
                         if (ReceiveClientData != null)
                             ReceiveClientData(token, rev);
-                        
+
                         DataCallBackReady(token, rev);
-                        
+
                         //这里API处理完后,并没有返回结果,当然结果是要返回的,却不是在这里, 这里的代码只管接收.  
                         //若要返回结果,可在API处理中调用此类对象的SendMessage方法,统一打包发送.不要被微软的示例给迷惑了.  
                     } while (token.Buffer.Count > 4);
@@ -462,7 +461,7 @@ namespace HaoYueNet.ServerNetwork
             OnClose(token);
 
             lock (m_clients) { m_clients.Remove(token); }
-            
+
             //补充处理
             lock (_DictSocketAsyncUserToken) { _DictSocketAsyncUserToken.Remove(token.Socket); }
 
@@ -546,11 +545,11 @@ namespace HaoYueNet.ServerNetwork
                 sendrun--;
                 Console.WriteLine("!!!!!!!!!!!!!!!!!!!!!!!!!!");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
             }
-            
+
         }
 
         public void SendMessage(AsyncUserToken token, byte[] message)
@@ -570,6 +569,9 @@ namespace HaoYueNet.ServerNetwork
                     myreadEventArgs.AcceptSocket = token.Socket;
                     myreadEventArgs.SetBuffer(message, 0, message.Length);  //将数据放置进去.  
                     token.Socket.SendAsync(myreadEventArgs);
+
+                    //得了，先回去吧
+                    m_Sendpool.Push(myreadEventArgs);
                     return;
                 }
                 else
@@ -639,7 +641,7 @@ namespace HaoYueNet.ServerNetwork
         }
 
         #region
-        
+
         /// <summary>
         /// 用于调用者回调的虚函数
         /// </summary>
@@ -710,12 +712,12 @@ namespace HaoYueNet.ServerNetwork
                 OnCloseReady(token);
             }
         }
-        
+
         public AsyncUserToken GetAsyncUserTokenForSocket(Socket sk)
         {
             return _DictSocketAsyncUserToken.ContainsKey(sk) ? _DictSocketAsyncUserToken[sk] : null;
         }
-        
+
         /// <summary>
         /// 对外暴露的发送消息
         /// </summary>
@@ -731,7 +733,7 @@ namespace HaoYueNet.ServerNetwork
             byte[] _finaldata = Serizlize<HunterNet_S2C>(_s2cdata);
             SendWithIndex(token, _finaldata);
         }
-        
+
         /// <summary>
         /// 发送心跳包
         /// </summary>
@@ -757,7 +759,7 @@ namespace HaoYueNet.ServerNetwork
                 OnCloseReady(token);
             }
         }
-        
+
         private void DataCallBackReady(AsyncUserToken sk, byte[] data)
         {
 
