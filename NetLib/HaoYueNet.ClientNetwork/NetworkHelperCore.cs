@@ -1,14 +1,6 @@
-﻿using HunterProtobufCore;
-using ProtoBuf;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
+﻿using Google.Protobuf;
+using HunterProtobufCore;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace HaoYueNet.ClientNetwork
 {
@@ -159,9 +151,9 @@ namespace HaoYueNet.ClientNetwork
         {
             LogOut("准备数据 CMDID=> "+CMDID);
             HunterNet_C2S _c2sdata = new HunterNet_C2S();
-            _c2sdata.HunterNetCore_CmdID = CMDID;
-            _c2sdata.HunterNetCore_Data = data;
-            byte[] _finaldata = Serizlize<HunterNet_C2S>(_c2sdata);
+            _c2sdata.HunterNetCoreCmdID = CMDID;
+            _c2sdata.HunterNetCoreData = ByteString.CopyFrom(data);
+            byte[] _finaldata = Serizlize(_c2sdata);
             SendToSocket(_finaldata);
         }
 
@@ -239,7 +231,7 @@ namespace HaoYueNet.ClientNetwork
             
             HunterNet_S2C _c2s = DeSerizlize<HunterNet_S2C>(data);
             
-            OnDataCallBack((int)_c2s.HunterNetCore_CmdID, (int)_c2s.HunterNetCore_ERRORCode, _c2s.HunterNetCore_Data);
+            OnDataCallBack(_c2s.HunterNetCoreCmdID, _c2s.HunterNetCoreERRORCode, _c2s.HunterNetCoreData.ToArray());
         }
 
         private void Recive(object o)
@@ -332,25 +324,19 @@ namespace HaoYueNet.ClientNetwork
             }
         }
 
-        public static byte[] Serizlize<T>(T MsgObj)
+        public static byte[] Serizlize(IMessage msg)
         {
-            using (MemoryStream ms = new MemoryStream())
-            {
-                Serializer.Serialize<T>(ms, MsgObj);
-                byte[] data1 = ms.ToArray();
-                return data1;
-            }
+            return msg.ToByteArray();
         }
 
-        public static T DeSerizlize<T>(byte[] MsgObj)
+        public static T DeSerizlize<T>(byte[] bytes)
         {
-            using (MemoryStream ms = new MemoryStream(MsgObj))
-            {
-                var ds_obj = Serializer.Deserialize<T>(ms);
-                return ds_obj;
-            }
+            var msgType = typeof(T);
+            object msg = Activator.CreateInstance(msgType);
+            ((IMessage)msg).MergeFrom(bytes);
+            return (T)msg;
         }
-        
+
         public void LogOut(string Msg)
         {
             //Console.WriteLine(Msg);

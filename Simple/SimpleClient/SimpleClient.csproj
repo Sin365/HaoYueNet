@@ -1,19 +1,29 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Data\" />
-    <Folder Include="Manager\" />
+    <Compile Remove="Data\**" />
+    <Compile Remove="Manager\**" />
+    <EmbeddedResource Remove="Data\**" />
+    <EmbeddedResource Remove="Manager\**" />
+    <None Remove="Data\**" />
+    <None Remove="Manager\**" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\NetLib\HaoYueNet.ClientNetwork\HaoYueNet.ClientNetwork.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Google.Protobuf">
+      <HintPath>..\..\NetLib\Google.Protobuf.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

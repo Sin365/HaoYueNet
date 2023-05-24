@@ -1,4 +1,4 @@
-﻿using ProtoBuf;
+﻿using Google.Protobuf;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,24 +9,17 @@ namespace SimpleClient
 {
     public static class NetBase
     {
-        //序列化
-        public static byte[] Serizlize<T>(T MsgObj)
+        public static byte[] Serizlize(IMessage msg)
         {
-            using (MemoryStream ms = new MemoryStream())
-            {
-                Serializer.Serialize<T>(ms, MsgObj);
-                byte[] data1 = ms.ToArray();
-                return data1;
-            }
+            return msg.ToByteArray();
         }
-        //反序列化
-        public static T DeSerizlize<T>(byte[] MsgObj)
+
+        public static T DeSerizlize<T>(byte[] bytes)
         {
-            using (MemoryStream ms = new MemoryStream(MsgObj))
-            {
-                var ds_obj = Serializer.Deserialize<T>(ms);
-                return ds_obj;
-            }
+            var msgType = typeof(T);
+            object msg = Activator.CreateInstance(msgType);
+            ((IMessage)msg).MergeFrom(bytes);
+            return (T)msg;
         }
     }
 

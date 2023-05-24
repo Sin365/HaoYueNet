@@ -1,5 +1,5 @@
-﻿using HunterProtobufCore;
-using ProtoBuf;
+﻿using Google.Protobuf;
+using HunterProtobufCore;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,6 +9,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using static Google.Protobuf.Reflection.FieldOptions.Types;
 
 
 namespace HaoYueNet.ServerNetwork
@@ -727,10 +728,10 @@ namespace HaoYueNet.ServerNetwork
         {
             AsyncUserToken token = GetAsyncUserTokenForSocket(sk);
             HunterNet_S2C _s2cdata = new HunterNet_S2C();
-            _s2cdata.HunterNetCore_CmdID = CMDID;
-            _s2cdata.HunterNetCore_Data = data;
-            _s2cdata.HunterNetCore_ERRORCode = ERRCODE;
-            byte[] _finaldata = Serizlize<HunterNet_S2C>(_s2cdata);
+            _s2cdata.HunterNetCoreCmdID = CMDID;
+            _s2cdata.HunterNetCoreData = ByteString.CopyFrom(data);
+            _s2cdata.HunterNetCoreERRORCode = ERRCODE;
+            byte[] _finaldata = Serizlize(_s2cdata);
             SendWithIndex(token, _finaldata);
         }
 
@@ -762,7 +763,6 @@ namespace HaoYueNet.ServerNetwork
 
         private void DataCallBackReady(AsyncUserToken sk, byte[] data)
         {
-
             //增加接收计数
             sk.RevIndex = MaxRevIndexNum;
 
@@ -776,7 +776,7 @@ namespace HaoYueNet.ServerNetwork
                 try
                 {
                     HunterNet_C2S _s2c = DeSerizlize<HunterNet_C2S>(data);
-                    DataCallBack(sk, (int)_s2c.HunterNetCore_CmdID, _s2c.HunterNetCore_Data);
+                    DataCallBack(sk, (int)_s2c.HunterNetCoreCmdID, _s2c.HunterNetCoreData.ToArray());
                 }
                 catch (Exception ex)
                 {
@@ -816,25 +816,17 @@ namespace HaoYueNet.ServerNetwork
         }
         #endregion
 
-        public static byte[] Serizlize<T>(T MsgObj)
+        public static byte[] Serizlize(IMessage msg)
         {
-            using (MemoryStream ms = new MemoryStream())
-            {
-                Serializer.Serialize<T>(ms, MsgObj);
-                byte[] data1 = ms.ToArray();
-                return data1;
-            }
+            return msg.ToByteArray();
         }
 
-        public static T DeSerizlize<T>(byte[] MsgObj)
+        public static T DeSerizlize<T>(byte[] bytes)
         {
-            using (MemoryStream ms = new MemoryStream(MsgObj))
-            {
-                var ds_obj = Serializer.Deserialize<T>(ms);
-                //ds_obj = MySet(ds_obj);
-                return ds_obj;
-            }
-
+            var msgType = typeof(T);
+            object msg = Activator.CreateInstance(msgType);
+            ((IMessage)msg).MergeFrom(bytes);
+            return (T)msg;
         }
     }
 }
