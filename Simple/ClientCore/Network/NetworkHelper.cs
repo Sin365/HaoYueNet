@@ -1,11 +1,12 @@
-﻿using HaoYueNet.ClientNetwork;
+﻿using AxibugProtobuf;
+using HaoYueNet.ClientNetwork;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SimpleClient
+namespace ClientCore.Network
 {
     /// <summary>
     /// 继承网络库，以支持网络功能
@@ -52,12 +53,13 @@ namespace SimpleClient
         public void GetDataCallBack(int CMDID, int ERRCODE, byte[] data)
         {
             NetworkDeBugLog("收到消息 CMDID =>" + CMDID + " ERRCODE =>" + ERRCODE + " 数据长度=>" + data.Length);
-
             try
             {
                 //根据协议ID走不同逻辑
-                switch (CMDID)
+                switch ((CommandID)CMDID)
                 {
+                    case CommandID.CmdLogin: break;
+                    case CommandID.CmdChatmsg: App.chat.RecvChatMsg(data); break;
                 }
             }
             catch (Exception ex)

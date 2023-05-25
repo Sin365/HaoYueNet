@@ -1,12 +1,13 @@
-﻿using System.Net.Sockets;
+﻿using AxibugProtobuf;
+using System.Net.Sockets;
 using System.Timers;
 
-namespace SimpleServer
+namespace ServerCore.Manager
 {
     public class ClientInfo
     {
         public long UID { get; set; }
-        public long RID { get; set; }
+        public string Account { get; set; }
         public Socket _socket { get; set; }
         public bool IsOffline { get; set; } = false;
         public DateTime LogOutDT { get; set; }
@@ -14,14 +15,14 @@ namespace SimpleServer
 
     public class ClientManager
     {
-        public List<ClientInfo> ClientList = new List<ClientInfo>();
-        public Dictionary<long?, ClientInfo> _DictRIDClient = new Dictionary<long?, ClientInfo>();
-        public Dictionary<Socket, ClientInfo> _DictSocketClient = new Dictionary<Socket, ClientInfo>();
-        public Dictionary<long?, ClientInfo> _DictUIDClient = new Dictionary<long?, ClientInfo>();
-        
+        private List<ClientInfo> ClientList = new List<ClientInfo>();
+        private Dictionary<Socket, ClientInfo> _DictSocketClient = new Dictionary<Socket, ClientInfo>();
+        private Dictionary<long?, ClientInfo> _DictUIDClient = new Dictionary<long?, ClientInfo>();
+        private long TestUIDSeed = 0;
+
         private System.Timers.Timer _ClientCheckTimer;
         private long _RemoveOfflineCacheMin;
-        public void Init(long ticktime,long RemoveOfflineCacheMin)
+        public void Init(long ticktime, long RemoveOfflineCacheMin)
         {
             //换算成毫秒
             _RemoveOfflineCacheMin = RemoveOfflineCacheMin * 1000;
@@ -31,8 +32,13 @@ namespace SimpleServer
             _ClientCheckTimer.Elapsed += new ElapsedEventHandler(ClientCheckClearOffline_Elapsed);
             _ClientCheckTimer.Enabled = true;
         }
-        
-        private void ClientCheckClearOffline_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+
+        public long GetNextUID()
+        {
+            return ++TestUIDSeed;
+        }
+
+        private void ClientCheckClearOffline_Elapsed(object sender, ElapsedEventArgs e)
         {
             DateTime CheckDT = DateTime.Now.AddMinutes(-1 * _RemoveOfflineCacheMin);
             ClientInfo[] OfflineClientlist = ClientList.Where(w => w.IsOffline == true && w.LogOutDT < CheckDT).ToArray();
@@ -45,24 +51,47 @@ namespace SimpleServer
             }
             GC.Collect();
         }
-        
+
 
         //通用处理
         #region clientlist 处理
+
+        public ClientInfo JoinNewClient(Protobuf_Login data, Socket _socket)
+        {
+            //也许这个函数需加lock
+
+            ClientInfo cinfo = GetClientForSocket(_socket);
+            //如果连接还在
+            if (cinfo != null)
+            {
+                cinfo.IsOffline = false;
+            }
+            else
+            {
+                cinfo = new ClientInfo()
+                {
+                    UID = GetNextUID(),
+                    _socket = _socket,
+                    Account = data.Account,
+                    IsOffline = false,
+                };
+                AddClient(cinfo);
+            }
+            return cinfo;
+        }
 
         /// <summary>
         /// 增加用户
         /// </summary>
         /// <param name="client"></param>
-        public void AddClient(ClientInfo clientInfo)
+        void AddClient(ClientInfo clientInfo)
         {
             try
             {
-                Console.WriteLine("追加连接玩家 RID=>" + clientInfo.RID + "  UID=>" + clientInfo.UID);
+                Console.WriteLine("追加连接玩家 UID=>" + clientInfo.UID + " | " + clientInfo.Account);
                 lock (ClientList)
                 {
                     _DictUIDClient.Add(clientInfo.UID, clientInfo);
-                    _DictRIDClient.Add(clientInfo.RID, clientInfo);
                     _DictSocketClient.Add(clientInfo._socket, clientInfo);
                     ClientList.Add(clientInfo);
                 }
@@ -72,7 +101,7 @@ namespace SimpleServer
                 ex.ToString();
             }
         }
-        
+
         /// <summary>
         /// 清理连接
         /// </summary>
@@ -81,23 +110,16 @@ namespace SimpleServer
         {
             lock (ClientList)
             {
-                if(_DictUIDClient.ContainsKey(client.UID))
+                if (_DictUIDClient.ContainsKey(client.UID))
                     _DictUIDClient.Remove(client.UID);
 
-                if (_DictRIDClient.ContainsKey(client.RID))
-                    _DictRIDClient.Remove(client.RID);
-                
                 if (_DictSocketClient.ContainsKey(client._socket))
                     _DictSocketClient.Remove(client._socket);
-                
+
                 ClientList.Remove(client);
             }
         }
 
-        public ClientInfo GetClientForRoleID(int RoleID)
-        {
-            return _DictRIDClient.ContainsKey(RoleID) ? _DictRIDClient[RoleID] : null;
-        }
 
         public ClientInfo GetClientForSocket(Socket sk)
         {
@@ -123,7 +145,7 @@ namespace SimpleServer
             if (!_DictSocketClient.ContainsKey(sk))
                 return;
 
-            Console.WriteLine("标记玩家RID"+ _DictSocketClient[sk].RID+ "为离线");
+            Console.WriteLine("标记玩家UID" + _DictSocketClient[sk].UID + "为离线");
             _DictSocketClient[sk].IsOffline = true;
             _DictSocketClient[sk].LogOutDT = DateTime.Now;
         }
@@ -134,17 +156,14 @@ namespace SimpleServer
                 return;
 
             RemoveClient(_DictSocketClient[sk]);
-            //ClientList.Remove(GetClientForSocket(sk));
         }
 
         #endregion
 
-        //public void AddClient_JoinGame(Socket sk)
-        //{
-        //    var c = new ClientInfo();
-        //    c = AutoRoleID;
-        //    AddClient(c);
-        //}
+        public void ClientSendALL(int CMDID, int ERRCODE, byte[] data)
+        {
+            ClientSend(ClientList, CMDID, ERRCODE, data);
+        }
 
         /// <summary>
         /// 给一组用户发送数据
@@ -155,11 +174,11 @@ namespace SimpleServer
         /// <param name="data"></param>
         public void ClientSend(List<ClientInfo> _toclientlist, int CMDID, int ERRCODE, byte[] data)
         {
-            for (int i = 0; i < _toclientlist.Count();i++)
+            for (int i = 0; i < _toclientlist.Count(); i++)
             {
                 if (_toclientlist[i] == null || _toclientlist[i].IsOffline)
                     continue;
-                ServerManager.g_SocketMgr.SendToSocket(_toclientlist[i]._socket, CMDID,ERRCODE,data);
+                ServerManager.g_SocketMgr.SendToSocket(_toclientlist[i]._socket, CMDID, ERRCODE, data);
             }
         }
 
@@ -181,6 +200,11 @@ namespace SimpleServer
             if (_c == null || _c.IsOffline)
                 return;
             ServerManager.g_SocketMgr.SendToSocket(_c._socket, CMDID, ERRCODE, data);
+        }
+
+        public int GetOnlineClient()
+        {
+            return ClientList.Where(w => !w.IsOffline).Count();
         }
     }
 }

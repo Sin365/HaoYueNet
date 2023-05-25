@@ -1,14 +1,10 @@
 ﻿using Google.Protobuf;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace SimpleClient
+namespace ServerCore.NetWork
 {
     public static class NetBase
     {
+
         public static byte[] Serizlize(IMessage msg)
         {
             return msg.ToByteArray();

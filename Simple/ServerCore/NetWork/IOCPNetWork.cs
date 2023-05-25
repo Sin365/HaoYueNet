@@ -1,7 +1,9 @@
-﻿using HaoYueNet.ServerNetwork;
+﻿using AxibugProtobuf;
+using HaoYueNet.ServerNetwork;
+using ServerCore.Manager;
 using System.Net.Sockets;
 
-namespace SimpleServer
+namespace ServerCore.NetWork
 {
     public class IOCPNetWork : SocketManager
     {
@@ -25,7 +27,7 @@ namespace SimpleServer
 
         private void IOCPNetWork_ClientNumberChange(int num, AsyncUserToken token)
         {
-            Console.WriteLine("建立新的连接");
+            Console.WriteLine("Client数发生变化");
         }
 
         /// <summary>
@@ -41,12 +43,13 @@ namespace SimpleServer
 
         public void DataCallBackToOld(Socket sk, int CMDID, byte[] data)
         {
-            //ServerManager.g_Log.Debug("收到消息 CMDID =>" + CMDID + " 数据长度=>" + data.Length);
+            ServerManager.g_Log.Debug("收到消息 CMDID =>" + CMDID + " 数据长度=>" + data.Length);
             try
             {
-                switch (CMDID)
+                switch ((CommandID)CMDID)
                 {
-                    
+                    case CommandID.CmdLogin: ServerManager.g_Login.UserLogin(sk, data); break;
+                    case CommandID.CmdChatmsg: ServerManager.g_Chat.RecvPlayerChatMsg(sk, data); break;
                 }
             }
             catch (Exception ex)
@@ -63,16 +66,16 @@ namespace SimpleServer
         {
             OnCloseToOld(token.Socket);
         }
-        
+
         /// <summary>
         /// 断开连接
         /// </summary>
         /// <param name="sk"></param>
         public void OnCloseToOld(Socket sk)
         {
-            //ServerManager.g_Log.Debug("清理掉线");
+            Console.WriteLine("断开连接");
             ServerManager.g_ClientMgr.SetClientOfflineForSocket(sk);
         }
-        
+
     }
 }

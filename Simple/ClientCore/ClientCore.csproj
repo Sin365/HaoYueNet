@@ -1,23 +1,14 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Data\**" />
-    <Compile Remove="Manager\**" />
-    <EmbeddedResource Remove="Data\**" />
-    <EmbeddedResource Remove="Manager\**" />
-    <None Remove="Data\**" />
-    <None Remove="Manager\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\NetLib\HaoYueNet.ClientNetwork\HaoYueNet.ClientNetwork.csproj" />
+    <ProjectReference Include="..\Protobuf\Protobuf.csproj" />
   </ItemGroup>
 
   <ItemGroup>
