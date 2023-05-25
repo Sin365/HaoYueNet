@@ -1,9 +1,10 @@
 ﻿using Google.Protobuf;
 
-namespace ClientCore.Network
+namespace ClientCore.Common
 {
-    public static class NetBase
+    public static class ProtoBufHelper
     {
+
         public static byte[] Serizlize(IMessage msg)
         {
             return msg.ToByteArray();

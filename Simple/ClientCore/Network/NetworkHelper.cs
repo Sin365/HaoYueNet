@@ -55,12 +55,8 @@ namespace ClientCore.Network
             NetworkDeBugLog("收到消息 CMDID =>" + CMDID + " ERRCODE =>" + ERRCODE + " 数据长度=>" + data.Length);
             try
             {
-                //根据协议ID走不同逻辑
-                switch ((CommandID)CMDID)
-                {
-                    case CommandID.CmdLogin: break;
-                    case CommandID.CmdChatmsg: App.chat.RecvChatMsg(data); break;
-                }
+                //抛出网络数据
+                NetMsg.Instance.PostNetMsgEvent(CMDID, data);
             }
             catch (Exception ex)
             {

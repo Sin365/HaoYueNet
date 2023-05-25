@@ -1,8 +1,8 @@
 ﻿using Google.Protobuf;
 
-namespace ServerCore.NetWork
+namespace ServerCore.Common
 {
-    public static class NetBase
+    public static class ProtoBufHelper
     {
 
         public static byte[] Serizlize(IMessage msg)

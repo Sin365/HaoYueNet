@@ -46,11 +46,8 @@ namespace ServerCore.NetWork
             ServerManager.g_Log.Debug("收到消息 CMDID =>" + CMDID + " 数据长度=>" + data.Length);
             try
             {
-                switch ((CommandID)CMDID)
-                {
-                    case CommandID.CmdLogin: ServerManager.g_Login.UserLogin(sk, data); break;
-                    case CommandID.CmdChatmsg: ServerManager.g_Chat.RecvPlayerChatMsg(sk, data); break;
-                }
+                //抛出网络数据
+                NetMsg.Instance.PostNetMsgEvent(CMDID, sk, data);
             }
             catch (Exception ex)
             {

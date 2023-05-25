@@ -1,8 +1,10 @@
 ﻿using ClientCore;
+using ClientCore.Event;
+
 App.Init("127.0.0.1", 23846);
 
-//注册
-App.chat.OnChatMsg += OnChatMsg;
+//注册事件
+EventSystem.Instance.RegisterEvent<string, string>(EEvent.OnChatMsg, OnChatMsg);
 
 while (true)
 {

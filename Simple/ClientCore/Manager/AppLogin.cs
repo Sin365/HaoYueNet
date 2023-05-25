@@ -12,7 +12,7 @@ namespace ClientCore.Manager
                 LoginType = 0,
                 Account = Account,
             };
-            App.networkHelper.SendToServer((int)CommandID.CmdLogin, NetBase.Serizlize(msg));
+            App.networkHelper.SendToServer((int)CommandID.CmdLogin, NetworkHelper.Serizlize(msg));
         }
     }
 }
