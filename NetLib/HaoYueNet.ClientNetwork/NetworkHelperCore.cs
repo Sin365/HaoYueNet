@@ -1,5 +1,6 @@
 ﻿using Google.Protobuf;
 using HunterProtobufCore;
+using System.Net;
 using System.Net.Sockets;
 
 namespace HaoYueNet.ClientNetwork
@@ -341,6 +342,11 @@ namespace HaoYueNet.ClientNetwork
         {
             //Console.WriteLine(Msg);
             OnLogOut(Msg);
+        }
+
+        public Socket GetClientSocket()
+        {
+            return client;
         }
     }
 }

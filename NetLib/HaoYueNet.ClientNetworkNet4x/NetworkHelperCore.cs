@@ -346,5 +346,9 @@ namespace HaoYueNet.ClientNetworkNet4x
             //Console.WriteLine(Msg);
             OnLogOut(Msg);
         }
+        public Socket GetClientSocket()
+        {
+            return client;
+        }
     }
 }

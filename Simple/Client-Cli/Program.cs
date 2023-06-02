@@ -1,5 +1,7 @@
 ﻿using ClientCore;
 using ClientCore.Event;
+using System.Net;
+using System.Net.Sockets;
 
 App.Init("127.0.0.1", 23846);
 
@@ -30,6 +32,15 @@ while (true)
                 return;
             }
             App.chat.SendChatMsg(CmdArr[1]);
+            break;
+        case "socket":
+            {
+                Socket socket = App.networkHelper.GetClientSocket();
+                if (socket == null)
+                    return;
+                IPEndPoint endpoint = ((IPEndPoint)socket.LocalEndPoint);
+                Console.WriteLine($"LocalEndPoint IP->{endpoint.Address.ToString()} Port->{endpoint.Port}");
+            }
             break;
         default:
             Console.WriteLine("未知命令" + CommandStr);

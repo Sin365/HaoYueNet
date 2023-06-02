@@ -63,9 +63,6 @@
     <Compile Include="ProtobufHunterNetCore.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="protobuf-net.dll" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>

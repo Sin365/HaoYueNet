@@ -156,16 +156,24 @@ namespace HaoYueNet.ServerNetwork
         }
 
 
-        /// <summary>  
-        /// 启动服务  
-        /// </summary>  
-        /// <param name="localEndPoint"></param>  
-        public bool Start(IPEndPoint localEndPoint)
+        /// <summary>
+        /// 启动服务
+        /// </summary>
+        /// <param name="localEndPoint"></param>
+        /// <param name="bReuseAddress">是否端口重用</param>
+        /// <returns></returns>
+        public bool Start(IPEndPoint localEndPoint,bool bReuseAddress = false)
         {
             try
             {
                 m_clients.Clear();
                 listenSocket = new Socket(localEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+
+                if (bReuseAddress)
+                {
+                    listenSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+                }
+
                 listenSocket.Bind(localEndPoint);
                 // start the server with a listen backlog of 100 connections  
                 listenSocket.Listen(m_maxConnectNum);
