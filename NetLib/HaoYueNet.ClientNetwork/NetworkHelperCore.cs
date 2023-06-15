@@ -1,4 +1,5 @@
 ﻿using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
 using HunterProtobufCore;
 using System.Net;
 using System.Net.Sockets;
@@ -36,7 +37,7 @@ namespace HaoYueNet.ClientNetwork
 
         private System.Timers.Timer _heartTimer;
 
-        public void Init(string IP, int port)
+        public void Init(string IP, int port, bool bBindReuseAddress = false,int bBindport = 0)
         {
 
             LogOut("==>初始化网络核心");
@@ -45,22 +46,32 @@ namespace HaoYueNet.ClientNetwork
             SendIndex = MaxSendIndexNum;
 
             client = new Socket(SocketType.Stream, ProtocolType.Tcp);
-            //IPAddress ip = IPAddress.Parse(IP);
-            //IPEndPoint point = new IPEndPoint(ip, port);
+            if (bBindReuseAddress)
+            {
+                client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+                IPEndPoint ipe = new IPEndPoint(IPAddress.Any, Convert.ToInt32(bBindport));
+                client.Bind(ipe);
+            }
+            Connect(IP, port);
+        }
 
-            LogOut("连接到IP "+ IP + ":"+ port);
-
+        public bool Connect(string IP, int port)
+        {
             //带回调的
-            //client.BeginConnect(ip, port, new AsyncCallback(CallBackMethod) , client);
             try
             {
+                LogOut("连接到远程IP " + IP + ":" + port);
                 client.Connect(IP, port);
                 Thread thread = new Thread(Recive);
                 thread.IsBackground = true;
                 thread.Start(client);
-                LogOut("连接成功!");
+                int localport = ((IPEndPoint)client.LocalEndPoint).Port;
+                LogOut($"连接成功!连接到远程IP->{IP}:{port} | 本地端口->{localport}");
 
-                _heartTimer = new System.Timers.Timer();
+                if (_heartTimer == null)
+                {
+                    _heartTimer = new System.Timers.Timer();
+                }
                 _heartTimer.Interval = TimerInterval;
                 _heartTimer.Elapsed += CheckUpdatetimer_Elapsed;
                 _heartTimer.AutoReset = true;
@@ -68,10 +79,13 @@ namespace HaoYueNet.ClientNetwork
                 LogOut("开启心跳包检测");
 
                 OnConnected(true);
+                return true;
             }
-            catch
+            catch (Exception ex)
             {
+                LogOut("连接失败：" + ex.ToString());
                 OnConnected(false);
+                return false;
             }
         }
 
@@ -202,6 +216,7 @@ namespace HaoYueNet.ClientNetwork
         {
             LogOut("关闭心跳包计数");
             _heartTimer.Enabled = false;
+            _heartTimer.Elapsed -= CheckUpdatetimer_Elapsed;
             LogOut("关闭连接");
             //关闭Socket连接
             client.Close();
