@@ -9,7 +9,7 @@ using System.Threading;
 
 namespace HaoYueNet.ClientNetworkNet4x
 {
-    public class NetworkHelperCore
+    public class NetworkHelperP2PCore
     {
         private Socket client;
 
@@ -92,7 +92,7 @@ namespace HaoYueNet.ClientNetworkNet4x
             }
         }
 
-        ~NetworkHelperCore()
+        ~NetworkHelperP2PCore()
         {
             client.Close();
         }
@@ -164,14 +164,16 @@ namespace HaoYueNet.ClientNetworkNet4x
         /// 供外部调用 发送消息
         /// </summary>
         /// <param name="CMDID"></param>
-        /// <param name="data">序列化之后的数据</param>
-        public void SendToServer(int CMDID,byte[] data)
+        /// <param name="ERRCODE"></param>
+        /// <param name="data"></param>
+        public void SendToSocket(int CMDID, int ERRCODE, byte[] data)
         {
             //LogOut("准备数据 CMDID=> "+CMDID);
-            HunterNet_C2S _c2sdata = new HunterNet_C2S();
-            _c2sdata.HunterNetCoreCmdID = CMDID;
-            _c2sdata.HunterNetCoreData = ByteString.CopyFrom(data);
-            byte[] _finaldata = Serizlize(_c2sdata);
+            HunterNet_S2C _s2sdata = new HunterNet_S2C();
+            _s2sdata.HunterNetCoreCmdID = CMDID;
+            _s2sdata.HunterNetCoreERRORCode = ERRCODE;
+            _s2sdata.HunterNetCoreData = ByteString.CopyFrom(data);
+            byte[] _finaldata = Serizlize(_s2sdata);
             SendToSocket(_finaldata);
         }
 
