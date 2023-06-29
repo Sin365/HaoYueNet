@@ -10,15 +10,14 @@ namespace ServerCore.NetWork
         public IOCPNetWork(int numConnections, int receiveBufferSize)
             : base(numConnections, receiveBufferSize)
         {
-            m_clientCount = 0;
-            m_maxConnectNum = numConnections;
-            m_revBufferSize = receiveBufferSize;
-            // allocate buffers such that the maximum number of sockets can have one outstanding read and   
-            //write posted to the socket simultaneously    
-            m_bufferManager = new BufferManager(receiveBufferSize * numConnections * opsToAlloc, receiveBufferSize);
-
-            m_pool = new SocketEventPool(numConnections);
-            m_maxNumberAcceptedClients = new Semaphore(numConnections, numConnections);
+            //m_clientCount = 0;
+            //m_maxConnectNum = numConnections;
+            //m_revBufferSize = receiveBufferSize;
+            //// allocate buffers such that the maximum number of sockets can have one outstanding read and   
+            ////write posted to the socket simultaneously    
+            //m_bufferManager = new BufferManager(receiveBufferSize * numConnections * opsToAlloc, receiveBufferSize);
+            //m_pool = new SocketEventPool(numConnections);
+            //m_maxNumberAcceptedClients = new Semaphore(numConnections, numConnections);
 
 
             ClientNumberChange += IOCPNetWork_ClientNumberChange;

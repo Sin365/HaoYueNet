@@ -111,7 +111,7 @@ namespace HaoYueNet.ClientNetworkNet4x
                 OnCloseReady();
                 return;
             }
-            LogOut("发送心跳包");
+            //LogOut("发送心跳包");
         }
 
         /// <summary>
@@ -229,7 +229,7 @@ namespace HaoYueNet.ClientNetworkNet4x
             //不处理心跳包
             if (data.Length == 1 && data[0] == 0x00)
             {
-                LogOut("收到心跳包");
+                //LogOut("收到心跳包");
                 return;
             }
             
