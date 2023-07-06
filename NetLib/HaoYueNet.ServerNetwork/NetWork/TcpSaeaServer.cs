@@ -14,13 +14,12 @@ using static Google.Protobuf.Reflection.FieldOptions.Types;
 
 namespace HaoYueNet.ServerNetwork
 {
-    public class SocketManager
+    public class TcpSaeaServer
     {
-
         /// <summary>
         /// 心跳包数据
         /// </summary>
-        private byte[] HeartbeatData = new byte[5] { 0x05, 0x00, 0x00, 0x00, 0x00 };
+        static byte[] HeartbeatData = new byte[5] { 0x05, 0x00, 0x00, 0x00, 0x00 };
         //响应倒计时计数最大值
         //public int MaxRevIndexNum { get; set; } = 5;
         ////发送倒计时计数最大值
@@ -30,90 +29,69 @@ namespace HaoYueNet.ServerNetwork
         public int MaxRevIndexNum { get; set; } = 50;
         //发送倒计时计数最大值
         public int MaxSendIndexNum { get; set; } = 3;
-
         //计时器间隔
         private static int TimerInterval = 3000;
-
         /// <summary>
         /// 心跳包计数器
         /// </summary>
         private System.Timers.Timer _heartTimer;
-
         public int m_maxConnectNum;    //最大连接数  
         public int m_revBufferSize;    //最大接收字节数  
-        public BufferManager m_bufferManager;
-        public const int opsToAlloc = 2;
+        protected BufferManager m_bufferManager;
+        protected const int opsToAlloc = 2;
         Socket listenSocket;            //监听Socket  
-        public SocketEventPool m_Receivepool;
-
-        public SocketEventPool m_Sendpool;
-        public TokenMsgPool msg_pool;
-        public int m_clientCount;              //连接的客户端数量  
-        public Semaphore m_maxNumberAcceptedClients;//信号量
-
+        protected SocketEventPool m_Receivepool;
+        protected SocketEventPool m_Sendpool;
+        protected TokenMsgPool msg_pool;
+        protected int m_clientCount;              //连接的客户端数量  
+        protected Semaphore m_maxNumberAcceptedClients;//信号量
         List<AsyncUserToken> m_clients; //客户端列表  
-        public Dictionary<Socket, AsyncUserToken> _DictSocketAsyncUserToken = new Dictionary<Socket, AsyncUserToken>();
 
+        protected Dictionary<Socket, AsyncUserToken> _DictSocketAsyncUserToken = new Dictionary<Socket, AsyncUserToken>();
 
-
-        #region Token管理
-
-        void ClearUserToken()
-        {
-            lock (_DictSocketAsyncUserToken)
-            {
-                m_clients.Clear();
-                _DictSocketAsyncUserToken.Clear();
-            }
-        }
-
-        void AddUserToken(AsyncUserToken userToken)
-        {
-            lock (_DictSocketAsyncUserToken)
-            {
-                m_clients.Add(userToken); 
-                _DictSocketAsyncUserToken.Add(userToken.Socket, userToken);
-            }
-        }
-
-        void RemoveUserToken(AsyncUserToken userToken)
-        {
-            lock (_DictSocketAsyncUserToken)
-            {
-                m_clients.Remove(userToken);
-                _DictSocketAsyncUserToken.Remove(userToken.Socket);
-            }
-        }
-        #endregion
 
         #region 定义委托  
-
         /// <summary>  
         /// 客户端连接数量变化时触发  
         /// </summary>  
         /// <param name="num">当前增加客户的个数(用户退出时为负数,增加时为正数,一般为1)</param>  
         /// <param name="token">增加用户的信息</param>  
-        public delegate void OnClientNumberChange(int num, AsyncUserToken token);
-
+        public delegate void OnClientNumberChangeHandler(int num, AsyncUserToken token);
         /// <summary>  
         /// 接收到客户端的数据  
         /// </summary>  
         /// <param name="token">客户端</param>  
         /// <param name="buff">客户端数据</param>  
-        public delegate void OnReceiveData(AsyncUserToken token, byte[] buff);
-
+        public delegate void OnReceiveDataHandler(AsyncUserToken sk, int CMDID, byte[] data);
+        /// <summary>
+        /// 断开连接
+        /// </summary>
+        /// <param name="sk"></param>
+        public delegate void OnDisconnectHandler(AsyncUserToken sk);
+        /// <summary>
+        /// 日志
+        /// </summary>
+        /// <param name="sk"></param>
+        public delegate void OnNetLogHandler(string msg);
         #endregion
 
         #region 定义事件  
         /// <summary>  
         /// 客户端连接数量变化事件  
-        /// </summary>  
-        public event OnClientNumberChange ClientNumberChange;
-
+        /// </summary>
+        public event OnClientNumberChangeHandler OnClientNumberChange;
         /// <summary>  
         /// 接收到客户端的数据事件  
-        /// </summary>  
-        public event OnReceiveData ReceiveClientData;
+        /// </summary>
+        public event OnReceiveDataHandler OnReceive;
+        /// <summary>  
+        /// 接收到客户端的断开连接
+        /// </summary>
+        public event OnDisconnectHandler OnDisconnected;
+        /// <summary>  
+        /// 网络库内部输出
+        /// </summary>
+        public event OnNetLogHandler OnNetLog;
         #endregion
 
         #region 定义属性
@@ -128,7 +106,7 @@ namespace HaoYueNet.ServerNetwork
         /// </summary>  
         /// <param name="numConnections">最大连接数</param>  
         /// <param name="receiveBufferSize">缓存区大小</param>  
-        public SocketManager(int numConnections, int receiveBufferSize)
+        public TcpSaeaServer(int numConnections, int receiveBufferSize)
         {
             m_clientCount = 0;
             m_maxConnectNum = numConnections;
@@ -145,6 +123,7 @@ namespace HaoYueNet.ServerNetwork
             m_maxNumberAcceptedClients = new Semaphore(numConnections, numConnections);
         }
 
+        #region 连接操作
         /// <summary>  
         /// 初始化  
         /// </summary>  
@@ -179,8 +158,8 @@ namespace HaoYueNet.ServerNetwork
 
                 m_Sendpool.Push(readWriteEventArg);
             }
+            OutNetLog("初始化完毕");
         }
-
 
         /// <summary>
         /// 启动服务
@@ -188,7 +167,7 @@ namespace HaoYueNet.ServerNetwork
         /// <param name="localEndPoint"></param>
         /// <param name="bReuseAddress">是否端口重用</param>
         /// <returns></returns>
-        public bool Start(IPEndPoint localEndPoint,bool bReuseAddress = false)
+        public bool Start(IPEndPoint localEndPoint, bool bReuseAddress = false)
         {
             try
             {
@@ -206,12 +185,14 @@ namespace HaoYueNet.ServerNetwork
                 // post accepts on the listening socket  
                 StartAccept(null);
 
+                OutNetLog("监听:" + listenSocket.AddressFamily.ToString());
+
                 _heartTimer = new System.Timers.Timer();
                 _heartTimer.Interval = TimerInterval;
                 _heartTimer.Elapsed += CheckUpdatetimer_Elapsed;
                 _heartTimer.AutoReset = true;
                 _heartTimer.Enabled = true;
-                //Console.WriteLine("开启心跳包定时器");
+                OutNetLog("开启定时心跳包");
 
                 return true;
             }
@@ -244,10 +225,9 @@ namespace HaoYueNet.ServerNetwork
             int c_count = m_clients.Count;
             ClearUserToken();
 
-            if (ClientNumberChange != null)
-                ClientNumberChange(-c_count, null);
+            if (OnClientNumberChange != null)
+                OnClientNumberChange(-c_count, null);
         }
-
 
         public void CloseClient(AsyncUserToken token)
         {
@@ -258,7 +238,66 @@ namespace HaoYueNet.ServerNetwork
             catch (Exception) { }
         }
 
+        //关闭客户端连接
+        private void CloseClientSocket(SocketAsyncEventArgs e)
+        {
+            AsyncUserToken token = e.UserToken as AsyncUserToken;
 
+            //调用关闭连接
+            OnDisconnected?.Invoke(token);
+
+            RemoveUserToken(token);
+
+            //如果有事件,则调用事件,发送客户端数量变化通知  
+            OnClientNumberChange?.Invoke(-1, token);
+
+            // close the socket associated with the client  
+            try
+            {
+                token.Socket.Shutdown(SocketShutdown.Send);
+            }
+            catch (Exception) { }
+            token.Socket.Close();
+            // decrement the counter keeping track of the total number of clients connected to the server  
+            Interlocked.Decrement(ref m_clientCount);
+            m_maxNumberAcceptedClients.Release();
+            // Free the SocketAsyncEventArg so they can be reused by another client  
+            ReleaseSocketAsyncEventArgs(e);
+        }
+        #endregion
+
+        #region Token管理
+        void AddUserToken(AsyncUserToken userToken)
+        {
+            lock (_DictSocketAsyncUserToken)
+            {
+                m_clients.Add(userToken);
+                _DictSocketAsyncUserToken.Add(userToken.Socket, userToken);
+            }
+        }
+        void RemoveUserToken(AsyncUserToken userToken)
+        {
+            lock (_DictSocketAsyncUserToken)
+            {
+                m_clients.Remove(userToken);
+                _DictSocketAsyncUserToken.Remove(userToken.Socket);
+            }
+        }
+        void ClearUserToken()
+        {
+            lock (_DictSocketAsyncUserToken)
+            {
+                m_clients.Clear();
+                _DictSocketAsyncUserToken.Clear();
+            }
+        }
+        public AsyncUserToken GetAsyncUserTokenForSocket(Socket sk)
+        {
+            return _DictSocketAsyncUserToken.ContainsKey(sk) ? _DictSocketAsyncUserToken[sk] : null;
+        }
+        #endregion
+
+        #region 监听客户端建立连接
         // Begins an operation to accept a connection request from the client   
         //  
         // <param name="acceptEventArg">The context object to use when issuing   
@@ -311,7 +350,7 @@ namespace HaoYueNet.ServerNetwork
 
                 AddUserToken(userToken);
 
-                ClientNumberChange?.Invoke(1, userToken);
+                OnClientNumberChange?.Invoke(1, userToken);
                 if (!e.AcceptSocket.ReceiveAsync(readEventArgs))
                 {
                     ProcessReceive(readEventArgs);
@@ -326,25 +365,9 @@ namespace HaoYueNet.ServerNetwork
             if (e.SocketError == SocketError.OperationAborted) return;
             StartAccept(e);
         }
+        #endregion
 
-        void IO_Completed(object sender, SocketAsyncEventArgs e)
-        {
-            // determine which type of operation just completed and call the associated handler  
-
-            switch (e.LastOperation)
-            {
-                case SocketAsyncOperation.Receive:
-                    ProcessReceive(e);
-                    break;
-                case SocketAsyncOperation.Send:
-                    ProcessSend(e);
-                    break;
-                default:
-                    throw new ArgumentException("The last operation completed on the socket was not a receive or send");
-            }
-
-        }
-
+        #region 完成端口收发处理
         // This method is invoked when an asynchronous receive operation completes.   
         // If the remote host closed the connection, then the socket is closed.    
         // If data was received then the data is echoed back to the client.  
@@ -364,15 +387,8 @@ namespace HaoYueNet.ServerNetwork
                     {
                         token.Buffer.AddRange(data);
                     }
-                    //注意:你一定会问,这里为什么要用do-while循环?   
-                    //如果当客户发送大数据流的时候,e.BytesTransferred的大小就会比客户端发送过来的要小,  
-                    //需要分多次接收.所以收到包的时候,先判断包头的大小.够一个完整的包再处理.  
-                    //如果客户短时间内发送多个小数据包时, 服务器可能会一次性把他们全收了.  
-                    //这样如果没有一个循环来控制,那么只会处理第一个包,  
-                    //剩下的包全部留在token.Buffer中了,只有等下一个数据包过来后,才会放出一个来.  
                     do
                     {
-
                         //如果包头不完整
                         if (token.Buffer.Count < 4)
                             break;
@@ -392,9 +408,6 @@ namespace HaoYueNet.ServerNetwork
                         {
                             token.Buffer.RemoveRange(0, packageLen + 4);
                         }
-                        //将数据包交给后台处理,这里你也可以新开个线程来处理.加快速度.  
-                        if (ReceiveClientData != null)
-                            ReceiveClientData(token, rev);
 
                         DataCallBackReady(token, rev);
 
@@ -418,7 +431,6 @@ namespace HaoYueNet.ServerNetwork
                 //RuncomLib.Log.LogUtils.Info(xe.Message + "\r\n" + xe.StackTrace);
             }
         }
-
         private void ProcessSend(SocketAsyncEventArgs e)
         {
             if (e.SocketError == SocketError.Success)
@@ -433,34 +445,29 @@ namespace HaoYueNet.ServerNetwork
             ReleaseSocketAsyncEventArgs(e);
             SendForMsgPool();
         }
-
-        //关闭客户端  
-        private void CloseClientSocket(SocketAsyncEventArgs e)
+        void IO_Completed(object sender, SocketAsyncEventArgs e)
         {
-            AsyncUserToken token = e.UserToken as AsyncUserToken;
+            // determine which type of operation just completed and call the associated handler  
 
-            //调用关闭连接
-            OnClose(token);
-
-            RemoveUserToken(token);
-
-            //如果有事件,则调用事件,发送客户端数量变化通知  
-            if (ClientNumberChange != null)
-                ClientNumberChange(-1, token);
-            // close the socket associated with the client  
-            try
+            switch (e.LastOperation)
             {
-                token.Socket.Shutdown(SocketShutdown.Send);
+                case SocketAsyncOperation.Receive:
+                    ProcessReceive(e);
+                    break;
+                case SocketAsyncOperation.Send:
+                    ProcessSend(e);
+                    break;
+                default:
+                    throw new ArgumentException("The last operation completed on the socket was not a receive or send");
             }
-            catch (Exception) { }
-            token.Socket.Close();
-            // decrement the counter keeping track of the total number of clients connected to the server  
-            Interlocked.Decrement(ref m_clientCount);
-            m_maxNumberAcceptedClients.Release();
-            // Free the SocketAsyncEventArg so they can be reused by another client  
-            ReleaseSocketAsyncEventArgs(e);
-        }
 
+        }
+        #endregion
+
+        /// <summary>
+        /// 回收SocketAsyncEventArgs
+        /// </summary>
+        /// <param name="saea"></param>
         void ReleaseSocketAsyncEventArgs(SocketAsyncEventArgs saea)
         {
             saea.UserToken = null;//TODO
@@ -477,7 +484,7 @@ namespace HaoYueNet.ServerNetwork
         }
 
         int sendrun = 0;
-        public void SendForMsgPool()
+        private void SendForMsgPool()
         {
             //if (flag_SendForMsgPool) return;
             try
@@ -491,21 +498,21 @@ namespace HaoYueNet.ServerNetwork
                     try
                     {
                         TokenWithMsg msg = msg_pool.Dequeue();
-                        //Console.WriteLine("从信息池取出发送");
+                        //OutNetLog("从信息池取出发送");
                         SendMessage(msg.token, msg.message);
                         msg = null;
                     }
                     catch
                     {
-                        Console.WriteLine("==============================================>");
+                        OutNetLog("==============================================>");
                     }
                 }
                 sendrun--;
-                Console.WriteLine("!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                OutNetLog("!!!!!!!!!!!!!!!!!!!!!!!!!!");
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
+                OutNetLog(ex.ToString());
             }
 
         }
@@ -539,13 +546,13 @@ namespace HaoYueNet.ServerNetwork
                 {
                     //先压入队列，等待m_Sendpool回收
                     msg_pool.Enqueue(new TokenWithMsg() { token = token, message = message });
-                    //Console.WriteLine("！！！！压入消息发送队列MSG_Pool");
+                    //OutNetLog("！！！！压入消息发送队列MSG_Pool");
                     return;
                 }
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                OutNetLog(e.ToString());
             }
         }
 
@@ -570,33 +577,15 @@ namespace HaoYueNet.ServerNetwork
         }
 
         #region
-
-        /// <summary>
-        /// 用于调用者回调的虚函数
-        /// </summary>
-        /// <param name="data"></param>
-        public virtual void DataCallBack(AsyncUserToken sk, int CMDID, byte[] data)
+        private void OnCloseReady(AsyncUserToken token)
         {
-
-        }
-        /// <summary>
-        /// 断开连接
-        /// </summary>
-        /// <param name="sk"></param>
-        public virtual void OnClose(AsyncUserToken sk)
-        {
-
-        }
-
-        public virtual void OnCloseReady(AsyncUserToken token)
-        {
-            OnClose(token);
+            OnDisconnected?.Invoke(token);
 
             RemoveUserToken(token);
 
-            //如果有事件,则调用事件,发送客户端数量变化通知  
-            if (ClientNumberChange != null)
-                ClientNumberChange(-1, token);
+            //如果有事件,则调用事件,发送客户端数量变化通知
+            OnClientNumberChange?.Invoke(-1, token);
+
             // close the socket associated with the client  
             try
             {
@@ -619,18 +608,12 @@ namespace HaoYueNet.ServerNetwork
             {
                 //发送数据
                 SendMessage(token, data);
-
                 token.SendIndex = MaxSendIndexNum;
             }
             catch
             {
                 OnCloseReady(token);
             }
-        }
-
-        public AsyncUserToken GetAsyncUserTokenForSocket(Socket sk)
-        {
-            return _DictSocketAsyncUserToken.ContainsKey(sk) ? _DictSocketAsyncUserToken[sk] : null;
         }
 
         /// <summary>
@@ -649,6 +632,40 @@ namespace HaoYueNet.ServerNetwork
             SendWithIndex(token, _finaldata);
         }
 
+        private void DataCallBackReady(AsyncUserToken sk, byte[] data)
+        {
+            //增加接收计数
+            sk.RevIndex = MaxRevIndexNum;
+
+            if (data.Length == 1 && data[0] == 0x00)//心跳包
+            {
+                //OutNetLog("收到心跳包");
+                //无处理
+            }
+            else
+            {
+                try
+                {
+                    HunterNet_C2S _s2c = DeSerizlize<HunterNet_C2S>(data);
+                    //将数据包交给后台处理,这里你也可以新开个线程来处理.加快速度.  
+                    OnReceive?.Invoke(sk, (int)_s2c.HunterNetCoreCmdID, _s2c.HunterNetCoreData.ToArray());
+                    //DataCallBack(sk, (int)_s2c.HunterNetCoreCmdID, _s2c.HunterNetCoreData.ToArray());
+                }
+                catch (Exception ex)
+                {
+                    OutNetLog("数据解析错误");
+                }
+            }
+        }
+
+        private void OutNetLog(string msg)
+        {
+            OnNetLog?.Invoke(msg);
+        }
+        #endregion
+
+        #region 心跳包
+
         /// <summary>
         /// 发送心跳包
         /// </summary>
@@ -660,7 +677,7 @@ namespace HaoYueNet.ServerNetwork
                 return;
             try
             {
-                //Console.WriteLine(DateTime.Now.ToString() + "发送心跳包");
+                //OutNetLog(DateTime.Now.ToString() + "发送心跳包");
                 token.SendIndex = MaxSendIndexNum;
                 SendMessage(token, HeartbeatData, true);
             }
@@ -669,31 +686,6 @@ namespace HaoYueNet.ServerNetwork
                 OnCloseReady(token);
             }
         }
-
-        private void DataCallBackReady(AsyncUserToken sk, byte[] data)
-        {
-            //增加接收计数
-            sk.RevIndex = MaxRevIndexNum;
-
-            if (data.Length == 1 && data[0] == 0x00)//心跳包
-            {
-                //Console.WriteLine("收到心跳包");
-                //无处理
-            }
-            else
-            {
-                try
-                {
-                    HunterNet_C2S _s2c = DeSerizlize<HunterNet_C2S>(data);
-                    DataCallBack(sk, (int)_s2c.HunterNetCoreCmdID, _s2c.HunterNetCoreData.ToArray());
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("数据解析错误");
-                }
-            }
-        }
-
         /// <summary>
         /// 心跳包时钟事件
         /// </summary>

@@ -16,7 +16,7 @@ namespace HaoYueNet.ClientNetworkNet4x
         /// <summary>
         /// 心跳包数据
         /// </summary>
-        private byte[] HeartbeatData = new byte[5] { 0x05, 0x00, 0x00, 0x00, 0x00 };
+        static byte[] HeartbeatData = new byte[5] { 0x05, 0x00, 0x00, 0x00, 0x00 };
 
         ////响应倒计时计数最大值
         //private static int MaxRevIndexNum = 6;
@@ -31,16 +31,16 @@ namespace HaoYueNet.ClientNetworkNet4x
         private static int MaxSendIndexNum = 3;
 
         //响应倒计时计数
-        private static int RevIndex=0;
+        private static int RevIndex = 0;
         //发送倒计时计数
-        private static int SendIndex=0;
+        private static int SendIndex = 0;
 
         //计时器间隔
         private static int TimerInterval = 3000;
 
         private System.Timers.Timer _heartTimer;
 
-        public void Init(string IP, int port, bool bBindReuseAddress = false,int bBindport = 0)
+        public void Init(string IP, int port, bool bBindReuseAddress = false, int bBindport = 0)
         {
 
             LogOut("==>初始化网络核心");
@@ -81,13 +81,13 @@ namespace HaoYueNet.ClientNetworkNet4x
                 _heartTimer.Enabled = true;
                 LogOut("开启心跳包检测");
 
-                OnConnected(true);
+                OnConnected?.Invoke(true);
                 return true;
             }
             catch (Exception ex)
             {
                 LogOut("连接失败：" + ex.ToString());
-                OnConnected(false);
+                OnConnected?.Invoke(false);
                 return false;
             }
         }
@@ -165,7 +165,7 @@ namespace HaoYueNet.ClientNetworkNet4x
         /// </summary>
         /// <param name="CMDID"></param>
         /// <param name="data">序列化之后的数据</param>
-        public void SendToServer(int CMDID,byte[] data)
+        public void SendToServer(int CMDID, byte[] data)
         {
             //LogOut("准备数据 CMDID=> "+CMDID);
             HunterNet_C2S _c2sdata = new HunterNet_C2S();
@@ -175,24 +175,20 @@ namespace HaoYueNet.ClientNetworkNet4x
             SendToSocket(_finaldata);
         }
 
-        public delegate void OnDataCallBack_Data(int CMDID, int ERRCODE, byte[] data);
+        #region 事件定义
+        public delegate void OnReceiveDataHandler(int CMDID, int ERRCODE, byte[] data);
+        public delegate void OnConnectedHandler(bool IsConnected);
+        public delegate void OnCloseHandler();
+        public delegate void OnLogOutHandler(string Msg);
+        #endregion
 
-        public event OnDataCallBack_Data OnDataCallBack;
-
-        public delegate void delegate_NoData();
-
-        public delegate void delegate_Bool(bool IsConnected);
-
-        public event delegate_NoData OnClose;
-
-        public event delegate_Bool OnConnected;
-
-        public delegate void delegate_str(string Msg);
-
+        public event OnConnectedHandler OnConnected;
+        public event OnReceiveDataHandler OnReceiveData;
+        public event OnCloseHandler OnClose;
         /// <summary>
         /// 网络库调试日志输出
         /// </summary>
-        public event delegate_str OnLogOut;
+        public event OnLogOutHandler OnLogOut;
 
         ///// <summary>
         ///// 用于调用者回调的虚函数
@@ -223,7 +219,7 @@ namespace HaoYueNet.ClientNetworkNet4x
             LogOut("关闭连接");
             //关闭Socket连接
             client.Close();
-            OnClose();
+            OnClose?.Invoke();
         }
 
 
@@ -234,7 +230,7 @@ namespace HaoYueNet.ClientNetworkNet4x
         {
             OnCloseReady();
         }
-        
+
         private void DataCallBackReady(byte[] data)
         {
 
@@ -247,10 +243,10 @@ namespace HaoYueNet.ClientNetworkNet4x
                 //LogOut("收到心跳包");
                 return;
             }
-            
+
             HunterNet_S2C _c2s = DeSerizlize<HunterNet_S2C>(data);
-            
-            OnDataCallBack(_c2s.HunterNetCoreCmdID, _c2s.HunterNetCoreERRORCode, _c2s.HunterNetCoreData.ToArray());
+
+            OnReceiveData(_c2s.HunterNetCoreCmdID, _c2s.HunterNetCoreERRORCode, _c2s.HunterNetCoreData.ToArray());
         }
 
         private void Recive(object o)
@@ -261,7 +257,7 @@ namespace HaoYueNet.ClientNetworkNet4x
             while (true)
             {
                 byte[] buffer = new byte[1024 * 1024 * 2];
-                int effective=0;
+                int effective = 0;
                 try
                 {
                     effective = client.Receive(buffer);
@@ -270,7 +266,7 @@ namespace HaoYueNet.ClientNetworkNet4x
                         continue;
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     //远程主机强迫关闭了一个现有的连接
                     OnCloseReady();
@@ -312,7 +308,7 @@ namespace HaoYueNet.ClientNetworkNet4x
                         else
                         {
                             //把头去掉，就可以吃了，蛋白质是牛肉的六倍
-                            DataCallBackReady(getData.Skip(StartIndex+4).Take(HeadLength-4).ToArray());
+                            DataCallBackReady(getData.Skip(StartIndex + 4).Take(HeadLength - 4).ToArray());
                             StartIndex += HeadLength;//当读取一条完整的数据后，读取数据的起始下标应为当前接受到的消息体的长度（当前数据的尾部或下一条消息的首部）
                         }
                     }
@@ -359,7 +355,7 @@ namespace HaoYueNet.ClientNetworkNet4x
         public void LogOut(string Msg)
         {
             //Console.WriteLine(Msg);
-            OnLogOut(Msg);
+            OnLogOut?.Invoke(Msg);
         }
 
         public Socket GetClientSocket()

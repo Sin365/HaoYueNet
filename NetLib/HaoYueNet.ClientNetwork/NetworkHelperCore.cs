@@ -13,7 +13,7 @@ namespace HaoYueNet.ClientNetwork
         /// <summary>
         /// 心跳包数据
         /// </summary>
-        private byte[] HeartbeatData = new byte[5] { 0x05, 0x00, 0x00, 0x00, 0x00 };
+        static byte[] HeartbeatData = new byte[5] { 0x05, 0x00, 0x00, 0x00, 0x00 };
 
         ////响应倒计时计数最大值
         //private static int MaxRevIndexNum = 6;
@@ -78,13 +78,13 @@ namespace HaoYueNet.ClientNetwork
                 _heartTimer.Enabled = true;
                 LogOut("开启心跳包检测");
 
-                OnConnected(true);
+                OnConnected?.Invoke(true);
                 return true;
             }
             catch (Exception ex)
             {
                 LogOut("连接失败：" + ex.ToString());
-                OnConnected(false);
+                OnConnected?.Invoke(false);
                 return false;
             }
         }
@@ -172,24 +172,20 @@ namespace HaoYueNet.ClientNetwork
             SendToSocket(_finaldata);
         }
 
-        public delegate void OnDataCallBack_Data(int CMDID, int ERRCODE, byte[] data);
+        #region 事件定义
+        public delegate void OnReceiveDataHandler(int CMDID, int ERRCODE, byte[] data);
+        public delegate void OnConnectedHandler(bool IsConnected);
+        public delegate void OnCloseHandler();
+        public delegate void OnLogOutHandler(string Msg);
+        #endregion
 
-        public event OnDataCallBack_Data OnDataCallBack;
-
-        public delegate void delegate_NoData();
-
-        public delegate void delegate_Bool(bool IsConnected);
-
-        public event delegate_NoData OnClose;
-
-        public event delegate_Bool OnConnected;
-
-        public delegate void delegate_str(string Msg);
-
+        public event OnConnectedHandler OnConnected;
+        public event OnReceiveDataHandler OnReceiveData;
+        public event OnCloseHandler OnClose;
         /// <summary>
         /// 网络库调试日志输出
         /// </summary>
-        public event delegate_str OnLogOut;
+        public event OnLogOutHandler OnLogOut;
 
         ///// <summary>
         ///// 用于调用者回调的虚函数
@@ -220,7 +216,7 @@ namespace HaoYueNet.ClientNetwork
             LogOut("关闭连接");
             //关闭Socket连接
             client.Close();
-            OnClose();
+            OnClose?.Invoke();
         }
 
 
@@ -246,8 +242,8 @@ namespace HaoYueNet.ClientNetwork
             }
             
             HunterNet_S2C _c2s = DeSerizlize<HunterNet_S2C>(data);
-            
-            OnDataCallBack(_c2s.HunterNetCoreCmdID, _c2s.HunterNetCoreERRORCode, _c2s.HunterNetCoreData.ToArray());
+
+            OnReceiveData(_c2s.HunterNetCoreCmdID, _c2s.HunterNetCoreERRORCode, _c2s.HunterNetCoreData.ToArray());
         }
 
         private void Recive(object o)
@@ -356,7 +352,7 @@ namespace HaoYueNet.ClientNetwork
         public void LogOut(string Msg)
         {
             //Console.WriteLine(Msg);
-            OnLogOut(Msg);
+            OnLogOut?.Invoke(Msg);
         }
 
         public Socket GetClientSocket()

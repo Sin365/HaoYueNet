@@ -16,14 +16,13 @@ namespace ClientCore.Network
         public NetworkHelper()
         {
             //指定接收服务器数据事件
-            OnDataCallBack += GetDataCallBack;
+            OnReceiveData += GetDataCallBack;
             //断开连接
             OnClose += OnConnectClose;
-            //网络库调试信息输出事件，用于打印连接断开，收发事件
-            OnLogOut += NetworkDeBugLog;
             OnConnected += NetworkConnected;
+            //网络库调试信息输出事件，用于打印网络内容
+            OnLogOut += NetworkDeBugLog;
         }
-
 
         public void NetworkConnected(bool IsConnect)
         {

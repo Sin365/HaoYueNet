@@ -59,6 +59,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="NetworkHelperCore.cs" />
+    <Compile Include="NetworkHelperP2PCore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProtobufHunterNetCore.cs" />
   </ItemGroup>
