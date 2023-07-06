@@ -10,9 +10,13 @@
 不用关心网络底层，直接引用或继承，即可便捷使用。
 
 #使用基础事件回调即可:
+
 OnClientNumberChange//连接数发生变化
+
 OnDisconnected//断开连接
+
 OnNetLog//来自网络库的日志信息
+
 OnReceive//收到网络数据
 
 #Simple目录下，有实例客户端和实例服务端
