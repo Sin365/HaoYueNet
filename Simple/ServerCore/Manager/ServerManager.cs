@@ -1,5 +1,5 @@
-﻿using System.Net;
-using ServerCore.NetWork;
+﻿using ServerCore.NetWork;
+using System.Net;
 
 namespace ServerCore.Manager
 {

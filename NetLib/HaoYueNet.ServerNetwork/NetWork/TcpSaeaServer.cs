@@ -1,15 +1,7 @@
 ﻿using Google.Protobuf;
 using HunterProtobufCore;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading;
-using static Google.Protobuf.Reflection.FieldOptions.Types;
 
 
 namespace HaoYueNet.ServerNetwork
@@ -185,7 +177,7 @@ namespace HaoYueNet.ServerNetwork
                 // post accepts on the listening socket  
                 StartAccept(null);
 
-                OutNetLog("监听:" + listenSocket.AddressFamily.ToString());
+                OutNetLog("监听:" + listenSocket.LocalEndPoint.ToString());
 
                 _heartTimer = new System.Timers.Timer();
                 _heartTimer.Interval = TimerInterval;
@@ -338,7 +330,12 @@ namespace HaoYueNet.ServerNetwork
                 // Get the socket for the accepted client connection and put it into the   
                 //ReadEventArg object user token  
                 SocketAsyncEventArgs readEventArgs = m_Receivepool.Pop();
-                AsyncUserToken userToken = (AsyncUserToken)readEventArgs.UserToken;
+                //TODO readEventArgs.UserToken这里的 UserToken 有可能是空
+                AsyncUserToken userToken;
+                if (readEventArgs.UserToken == null)
+                    readEventArgs.UserToken = new AsyncUserToken();
+
+                userToken = (AsyncUserToken)readEventArgs.UserToken;
                 userToken.Socket = e.AcceptSocket;
                 userToken.ConnectTime = DateTime.Now;
                 userToken.Remote = e.AcceptSocket.RemoteEndPoint;
@@ -381,39 +378,68 @@ namespace HaoYueNet.ServerNetwork
                 if (e.BytesTransferred > 0 && e.SocketError == SocketError.Success)
                 {
                     //读取数据  
-                    byte[] data = new byte[e.BytesTransferred];
-                    Array.Copy(e.Buffer, e.Offset, data, 0, e.BytesTransferred);
-                    lock (token.Buffer)
+                    //byte[] data = new byte[e.BytesTransferred];
+                    //Array.Copy(e.Buffer, e.Offset, data, 0, e.BytesTransferred);
+                    //lock (token.Buffer)
+                    lock(token.memoryStream)
                     {
-                        token.Buffer.AddRange(data);
+                        //token.Buffer.AddRange(data);
+                        token.memoryStream.Write(e.Buffer, e.Offset, e.BytesTransferred);
                     }
                     do
                     {
                         //如果包头不完整
-                        if (token.Buffer.Count < 4)
+                        //if (token.Buffer.Count < 4)
+                        if (token.memoryStream.Length < 4)
                             break;
 
                         //判断包的长度  
-                        byte[] lenBytes = token.Buffer.GetRange(0, 4).ToArray();
+                        //byte[] lenBytes = token.Buffer.GetRange(0, 4).ToArray();
+                        //int packageLen = BitConverter.ToInt32(lenBytes, 0) - 4;
+                        //if (packageLen > token.Buffer.Count - 4)
+                        //{   //长度不够时,退出循环,让程序继续接收  
+                        //    break;
+                        //}
+
+                        long FristBeginPos = token.memoryStream.Position;
+                        byte[] lenBytes = new byte[4];
+                        token.memoryStream.Seek(0, SeekOrigin.Begin);
+                        token.memoryStream.Read(lenBytes,0,4);
                         int packageLen = BitConverter.ToInt32(lenBytes, 0) - 4;
-                        if (packageLen > token.Buffer.Count - 4)
+                        if (packageLen > token.memoryStream.Length - 4)
                         {   //长度不够时,退出循环,让程序继续接收  
                             break;
                         }
 
                         //包够长时,则提取出来,交给后面的程序去处理  
-                        byte[] rev = token.Buffer.GetRange(4, packageLen).ToArray();
-                        //从数据池中移除这组数据  
-                        lock (token.Buffer)
+                        //byte[] rev = token.Buffer.GetRange(4, packageLen).ToArray();
+
+                        byte[] rev = new byte[packageLen];
+                        token.memoryStream.Seek(4, SeekOrigin.Begin);
+                        token.memoryStream.Read(rev, 0, packageLen);
+
+                        ////从数据池中移除这组数据  
+                        //lock (token.Buffer)
+                        //{
+                        //    token.Buffer.RemoveRange(0, packageLen + 4);
+                        //}
+
+                        token.memoryStream.Seek(FristBeginPos, SeekOrigin.Begin);
+                        //从数据池中移除这组数据
+                        lock (token.memoryStream)
                         {
-                            token.Buffer.RemoveRange(0, packageLen + 4);
+                            int numberOfBytesToRemove = packageLen + 4;
+                            byte[] buf = token.memoryStream.GetBuffer();
+                            Buffer.BlockCopy(buf, numberOfBytesToRemove, buf, 0, (int)token.memoryStream.Length - numberOfBytesToRemove);
+                            token.memoryStream.SetLength(token.memoryStream.Length - numberOfBytesToRemove);
                         }
 
                         DataCallBackReady(token, rev);
 
                         //这里API处理完后,并没有返回结果,当然结果是要返回的,却不是在这里, 这里的代码只管接收.  
                         //若要返回结果,可在API处理中调用此类对象的SendMessage方法,统一打包发送.不要被微软的示例给迷惑了.  
-                    } while (token.Buffer.Count > 4);
+                        //} while (token.Buffer.Count > 4);
+                    } while (token.memoryStream.Length > 4);
 
                     //继续接收. 为什么要这么写,请看Socket.ReceiveAsync方法的说明  
                     if (!token.Socket.ReceiveAsync(e))

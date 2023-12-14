@@ -13,6 +13,10 @@ namespace ClientCore.Network
     /// </summary>
     public class NetworkHelper : NetworkHelperCore
     {
+        /// <summary>
+        /// 网络库调试日志输出
+        /// </summary>
+        public event OnLogOutHandler OnLogOut;
         public NetworkHelper()
         {
             //指定接收服务器数据事件
@@ -24,14 +28,34 @@ namespace ClientCore.Network
             OnLogOut += NetworkDeBugLog;
         }
 
+        public delegate void OnReConnectedHandler();
+        /// <summary>
+        /// 重连成功事件
+        /// </summary>
+        public event OnReConnectedHandler OnReConnected;
+        /// <summary>
+        /// 是否自动重连
+        /// </summary>
+        public bool bAutoReConnect = true;
+        /// <summary>
+        /// 重连尝试时间
+        /// </summary>
+        const int ReConnectTryTime = 1000;
+
         public void NetworkConnected(bool IsConnect)
         {
+            NetworkDeBugLog($"NetworkConnected:{IsConnect}");
             if (IsConnect)
-                NetworkDeBugLog("服务器连接成功");
+            {
+
+            }
             else
             {
-                NetworkDeBugLog("服务器连接失败");
-                //to do 重连逻辑
+                //连接失败
+                NetworkDeBugLog("连接失败！");
+                //自动重连开关
+                if (bAutoReConnect)
+                    ReConnect();
             }
         }
 
@@ -39,7 +63,6 @@ namespace ClientCore.Network
         {
             //用于Unity内的输出
             //Debug.Log("NetCoreDebug >> "+str);
-
             Console.WriteLine("NetCoreDebug >> " + str);
         }
 
@@ -70,6 +93,39 @@ namespace ClientCore.Network
         public void OnConnectClose()
         {
             NetworkDeBugLog("OnConnectClose");
+
+            //自动重连开关
+            if (bAutoReConnect)
+                ReConnect();
+        }
+
+
+        bool bInReConnecting = false;
+        /// <summary>
+        /// 自动重连
+        /// </summary>
+        void ReConnect()
+        {
+            if (bInReConnecting)
+                return;
+            bInReConnecting = true;
+
+            bool bflagDone = false;
+            do
+            {
+                //等待时间
+                Thread.Sleep(ReConnectTryTime);
+                App.log.Debug($"尝试自动重连{LastConnectIP}:{LastConnectPort}……");
+                //第一步
+                if (Init(LastConnectIP, LastConnectPort))
+                {
+                    App.log.Debug($"自动重连成功!");
+                    bflagDone = true;
+                    App.log.Debug($"触发重连后的自动逻辑!");
+                    OnReConnected?.Invoke();
+                }
+            } while (!bflagDone);
+            bInReConnecting = false;
         }
     }
 }

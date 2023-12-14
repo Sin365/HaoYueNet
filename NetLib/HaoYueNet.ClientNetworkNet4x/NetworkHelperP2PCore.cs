@@ -31,16 +31,16 @@ namespace HaoYueNet.ClientNetworkNet4x
         private static int MaxSendIndexNum = 3;
 
         //响应倒计时计数
-        private static int RevIndex=0;
+        private static int RevIndex = 0;
         //发送倒计时计数
-        private static int SendIndex=0;
+        private static int SendIndex = 0;
 
         //计时器间隔
         private static int TimerInterval = 3000;
 
         private System.Timers.Timer _heartTimer;
 
-        public void Init(string IP, int port, bool bBindReuseAddress = false,int bBindport = 0)
+        public void Init(string IP, int port, bool bBindReuseAddress = false, int bBindport = 0)
         {
 
             LogOut("==>初始化网络核心");
@@ -236,7 +236,7 @@ namespace HaoYueNet.ClientNetworkNet4x
         {
             OnCloseReady();
         }
-        
+
         private void DataCallBackReady(byte[] data)
         {
 
@@ -249,21 +249,22 @@ namespace HaoYueNet.ClientNetworkNet4x
                 //LogOut("收到心跳包");
                 return;
             }
-            
+
             HunterNet_S2C _c2s = DeSerizlize<HunterNet_S2C>(data);
-            
+
             OnDataCallBack(_c2s.HunterNetCoreCmdID, _c2s.HunterNetCoreERRORCode, _c2s.HunterNetCoreData.ToArray());
         }
 
+        MemoryStream memoryStream = new MemoryStream();//开辟一个内存流
         private void Recive(object o)
         {
             var client = o as Socket;
-            MemoryStream memoryStream = new MemoryStream();//开辟一个内存流
+            //MemoryStream memoryStream = new MemoryStream();//开辟一个内存流
 
             while (true)
             {
                 byte[] buffer = new byte[1024 * 1024 * 2];
-                int effective=0;
+                int effective = 0;
                 try
                 {
                     effective = client.Receive(buffer);
@@ -272,7 +273,7 @@ namespace HaoYueNet.ClientNetworkNet4x
                         continue;
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     //远程主机强迫关闭了一个现有的连接
                     OnCloseReady();
@@ -305,21 +306,33 @@ namespace HaoYueNet.ClientNetworkNet4x
                         //↓↓↓↓↓↓↓↓                            ↓↓↓
                         if (getData.Length - StartIndex < HeadLength || HeadLength == -1)
                         {
+                            /* 一种清空流的方式
                             memoryStream.Close();//关闭内存流
                             memoryStream.Dispose();//释放内存资源
                             memoryStream = new MemoryStream();//创建新的内存流
+                            */
+
+                            //流复用的方式 不用重新new申请
+                            memoryStream.Position = 0;
+                            memoryStream.SetLength(0);
+
                             memoryStream.Write(getData, StartIndex, getData.Length - StartIndex);//从新将接受的消息写入内存流
                             break;
                         }
                         else
                         {
                             //把头去掉，就可以吃了，蛋白质是牛肉的六倍
-                            DataCallBackReady(getData.Skip(StartIndex+4).Take(HeadLength-4).ToArray());
+                            //DataCallBackReady(getData.Skip(StartIndex+4).Take(HeadLength-4).ToArray());
+
+                            //改为Array.Copy 提升效率
+                            int CoreLenght = HeadLength - 4;
+                            byte[] retData = new byte[CoreLenght];
+                            Array.Copy(getData, StartIndex + 4, retData, 0, CoreLenght);
+                            DataCallBackReady(retData);
                             StartIndex += HeadLength;//当读取一条完整的数据后，读取数据的起始下标应为当前接受到的消息体的长度（当前数据的尾部或下一条消息的首部）
                         }
                     }
                 }
-
             }
         }
 

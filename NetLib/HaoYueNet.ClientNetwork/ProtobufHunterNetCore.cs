@@ -6,13 +6,12 @@
 #region Designer generated code
 
 using pb = global::Google.Protobuf;
-using pbc = global::Google.Protobuf.Collections;
 using pbr = global::Google.Protobuf.Reflection;
-using scg = global::System.Collections.Generic;
-namespace HunterProtobufCore {
+namespace HunterProtobufCore
+{
 
-  /// <summary>Holder for reflection information generated from protobuf_HunterNetCore.proto</summary>
-  public static partial class ProtobufHunterNetCoreReflection {
+    /// <summary>Holder for reflection information generated from protobuf_HunterNetCore.proto</summary>
+    public static partial class ProtobufHunterNetCoreReflection {
 
     #region Descriptor
     /// <summary>File descriptor for protobuf_HunterNetCore.proto</summary>

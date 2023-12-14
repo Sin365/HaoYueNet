@@ -33,6 +33,20 @@ while (true)
             }
             App.chat.SendChatMsg(CmdArr[1]);
             break;
+        case "at":
+
+            //test 
+            string guid = Guid.NewGuid().ToString();
+            App.login.Login(guid);
+            while (true)
+            {
+                if (!App.networkHelper.GetClientSocket().Connected)
+                    return;
+                Thread.Sleep(10);
+                App.chat.SendChatMsg(guid);
+            }
+            //test end
+            break;
         case "socket":
             {
                 Socket socket = App.networkHelper.GetClientSocket();

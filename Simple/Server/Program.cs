@@ -1,5 +1,4 @@
-﻿using ServerCore;
-using ServerCore.Manager;
+﻿using ServerCore.Manager;
 
 ServerManager.InitServer(23846);
 
