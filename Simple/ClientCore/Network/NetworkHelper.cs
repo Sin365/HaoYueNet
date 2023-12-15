@@ -13,10 +13,6 @@ namespace ClientCore.Network
     /// </summary>
     public class NetworkHelper : NetworkHelperCore
     {
-        /// <summary>
-        /// 网络库调试日志输出
-        /// </summary>
-        public event OnLogOutHandler OnLogOut;
         public NetworkHelper()
         {
             //指定接收服务器数据事件

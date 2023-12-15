@@ -26,7 +26,7 @@ namespace ClientCore.Manager
             if (msg.Status == LoginResultStatus.Ok)
             {
                 App.log.Debug("登录成功");
-                App.user.InitMainUserData(msg);
+                App.user.InitMainUserData(App.user.userdata.Account);
             }
             else
             {

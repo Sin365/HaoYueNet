@@ -20,14 +20,13 @@ namespace ClientCore.Manager
             //注册重连成功事件，以便后续自动登录
             App.networkHelper.OnReConnected += OnReConnected;
         }
-
-        MainUserDataBase user = new MainUserDataBase();
-        public bool IsLoggedIn => user.IsLoggedIn;
+        public MainUserDataBase userdata { get;private set; } = new MainUserDataBase();
+        public bool IsLoggedIn => userdata.IsLoggedIn;
 
         public void InitMainUserData(string UName)
         {
-            user.Account = UName;
-            user.IsLoggedIn = true;
+            userdata.Account = UName;
+            userdata.IsLoggedIn = true;
             //以及其他数据初始化
             //...
         }
@@ -37,7 +36,7 @@ namespace ClientCore.Manager
         /// </summary>
         public void LoginOutData()
         {
-            user.IsLoggedIn = false;
+            userdata.IsLoggedIn = false;
             //以及其他数据清理
             //...
         }
@@ -48,9 +47,9 @@ namespace ClientCore.Manager
         public void OnReConnected()
         {
             //如果之前已登录，则重新登录
-            if (user.IsLoggedIn)
+            if (userdata.IsLoggedIn)
             {
-                App.login.Login(user.Account);
+                App.login.Login(userdata.Account);
             }
         }
     }
