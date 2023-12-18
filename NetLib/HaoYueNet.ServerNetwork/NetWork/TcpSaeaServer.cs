@@ -234,20 +234,13 @@ namespace HaoYueNet.ServerNetwork
         private void CloseClientSocket(SocketAsyncEventArgs e)
         {
             AsyncUserToken token = e.UserToken as AsyncUserToken;
-
             //调用关闭连接
             OnDisconnected?.Invoke(token);
-
             RemoveUserToken(token);
-
             //如果有事件,则调用事件,发送客户端数量变化通知  
             OnClientNumberChange?.Invoke(-1, token);
-
             // close the socket associated with the client  
-            try
-            {
-                token.Socket.Shutdown(SocketShutdown.Send);
-            }
+            try { token.Socket.Shutdown(SocketShutdown.Send); }
             catch (Exception) { }
             token.Socket.Close();
             // decrement the counter keeping track of the total number of clients connected to the server  
@@ -496,8 +489,11 @@ namespace HaoYueNet.ServerNetwork
         /// <param name="saea"></param>
         void ReleaseSocketAsyncEventArgs(SocketAsyncEventArgs saea)
         {
-            saea.UserToken = null;//TODO
-            saea.SetBuffer(null, 0, 0);
+            //saea.UserToken = null;//TODO
+            //saea.SetBuffer(null, 0, 0);
+            //saea.Dispose();
+            //↑ 这里不要自作主张去清东西，否则回收回去不可用
+
             switch (saea.LastOperation)
             {
                 case SocketAsyncOperation.Receive:
@@ -506,7 +502,10 @@ namespace HaoYueNet.ServerNetwork
                 case SocketAsyncOperation.Send:
                     m_Sendpool.Push(saea);
                     break;
+                default:
+                    throw new ArgumentException("ReleaseSocketAsyncEventArgs > The last operation completed on the socket was not a receive or send");
             }
+
         }
 
         int sendrun = 0;
@@ -602,16 +601,13 @@ namespace HaoYueNet.ServerNetwork
             return HeadAndBody;
         }
 
-        #region
+        #region 
         private void OnCloseReady(AsyncUserToken token)
         {
             OnDisconnected?.Invoke(token);
-
             RemoveUserToken(token);
-
             //如果有事件,则调用事件,发送客户端数量变化通知
             OnClientNumberChange?.Invoke(-1, token);
-
             // close the socket associated with the client  
             try
             {

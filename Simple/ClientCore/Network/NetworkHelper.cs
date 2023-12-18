@@ -32,7 +32,7 @@ namespace ClientCore.Network
         /// <summary>
         /// 是否自动重连
         /// </summary>
-        public bool bAutoReConnect = true;
+        public bool bAutoReConnect = false;
         /// <summary>
         /// 重连尝试时间
         /// </summary>
