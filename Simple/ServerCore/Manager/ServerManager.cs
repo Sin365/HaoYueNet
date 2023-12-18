@@ -14,6 +14,7 @@ namespace ServerCore.Manager
         public static void InitServer(int port)
         {
             g_ClientMgr = new ClientManager();
+            g_ClientMgr.Init(45000, 120);
             g_Log = new LogManager();
             g_Login = new LoginManager();
             g_Chat = new ChatManager();

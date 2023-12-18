@@ -22,10 +22,15 @@ namespace ServerCore.Manager
 
         private System.Timers.Timer _ClientCheckTimer;
         private long _RemoveOfflineCacheMin;
+        /// <summary>
+        ///  初始化并指定检查时间
+        /// </summary>
+        /// <param name="ticktime">tick检查毫秒数</param>
+        /// <param name="RemoveOfflineCache">清理掉线分钟数</param>
         public void Init(long ticktime, long RemoveOfflineCacheMin)
         {
             //换算成毫秒
-            _RemoveOfflineCacheMin = RemoveOfflineCacheMin * 1000;
+            _RemoveOfflineCacheMin = RemoveOfflineCacheMin;
             _ClientCheckTimer = new System.Timers.Timer();
             _ClientCheckTimer.Interval = ticktime;
             _ClientCheckTimer.AutoReset = true;
