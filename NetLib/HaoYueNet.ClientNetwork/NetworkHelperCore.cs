@@ -1,7 +1,7 @@
-﻿using Google.Protobuf;
-using HunterProtobufCore;
+﻿//using HunterProtobufCore;
 using System.Net;
 using System.Net.Sockets;
+using static HaoYueNet.ClientNetwork.BaseData;
 
 namespace HaoYueNet.ClientNetwork
 {
@@ -168,10 +168,13 @@ namespace HaoYueNet.ClientNetwork
         public void SendToServer(int CMDID,byte[] data)
         {
             //LogOut("准备数据 CMDID=> "+CMDID);
+            /*
             HunterNet_C2S _c2sdata = new HunterNet_C2S();
             _c2sdata.HunterNetCoreCmdID = CMDID;
             _c2sdata.HunterNetCoreData = ByteString.CopyFrom(data);
             byte[] _finaldata = Serizlize(_c2sdata);
+            */
+            byte[] _finaldata = HunterNet_C2S.CreatePkgData((ushort)CMDID, data);
             SendToSocket(_finaldata);
         }
 
@@ -243,10 +246,15 @@ namespace HaoYueNet.ClientNetwork
                 //LogOut("收到心跳包");
                 return;
             }
-            
+
+            /*
             HunterNet_S2C _c2s = DeSerizlize<HunterNet_S2C>(data);
 
             OnReceiveData(_c2s.HunterNetCoreCmdID, _c2s.HunterNetCoreERRORCode, _c2s.HunterNetCoreData.ToArray());
+            */
+
+            HunterNet_S2C.AnalysisPkgData(data, out ushort CmdID, out ushort Error, out byte[] resultdata);
+            OnReceiveData(CmdID, Error, resultdata);
         }
 
 
@@ -352,18 +360,6 @@ namespace HaoYueNet.ClientNetwork
             }
         }
 
-        public static byte[] Serizlize(IMessage msg)
-        {
-            return msg.ToByteArray();
-        }
-
-        public static T DeSerizlize<T>(byte[] bytes)
-        {
-            var msgType = typeof(T);
-            object msg = Activator.CreateInstance(msgType);
-            ((IMessage)msg).MergeFrom(bytes);
-            return (T)msg;
-        }
 
         public void LogOut(string Msg)
         {

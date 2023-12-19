@@ -1,11 +1,9 @@
-﻿using Google.Protobuf;
-using HunterProtobufCore;
-using System;
+﻿using System;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using static HaoYueNet.ClientNetworkNet4x.BaseData;
 
 namespace HaoYueNet.ClientNetworkNet4x
 {
@@ -40,9 +38,11 @@ namespace HaoYueNet.ClientNetworkNet4x
 
         private System.Timers.Timer _heartTimer;
 
-        public void Init(string IP, int port, bool bBindReuseAddress = false, int bBindport = 0)
-        {
+        public static string LastConnectIP;
+        public static int LastConnectPort;
 
+        public bool Init(string IP, int port, bool bBindReuseAddress = false, int bBindport = 0)
+        {
             LogOut("==>初始化网络核心");
 
             RevIndex = MaxRevIndexNum;
@@ -55,10 +55,12 @@ namespace HaoYueNet.ClientNetworkNet4x
                 IPEndPoint ipe = new IPEndPoint(IPAddress.Any, Convert.ToInt32(bBindport));
                 client.Bind(ipe);
             }
-            Connect(IP, port);
+            LastConnectIP = IP;
+            LastConnectPort = port;
+            return Connect(IP, port);
         }
 
-        public bool Connect(string IP, int port)
+        bool Connect(string IP, int port)
         {
             //带回调的
             try
@@ -168,10 +170,13 @@ namespace HaoYueNet.ClientNetworkNet4x
         public void SendToServer(int CMDID, byte[] data)
         {
             //LogOut("准备数据 CMDID=> "+CMDID);
+            /*
             HunterNet_C2S _c2sdata = new HunterNet_C2S();
             _c2sdata.HunterNetCoreCmdID = CMDID;
             _c2sdata.HunterNetCoreData = ByteString.CopyFrom(data);
             byte[] _finaldata = Serizlize(_c2sdata);
+            */
+            byte[] _finaldata = HunterNet_C2S.CreatePkgData((ushort)CMDID, data);
             SendToSocket(_finaldata);
         }
 
@@ -244,9 +249,14 @@ namespace HaoYueNet.ClientNetworkNet4x
                 return;
             }
 
+            /*
             HunterNet_S2C _c2s = DeSerizlize<HunterNet_S2C>(data);
 
             OnReceiveData(_c2s.HunterNetCoreCmdID, _c2s.HunterNetCoreERRORCode, _c2s.HunterNetCoreData.ToArray());
+            */
+
+            HunterNet_S2C.AnalysisPkgData(data, out ushort CmdID, out ushort Error, out byte[] resultdata);
+            OnReceiveData(CmdID, Error, resultdata);
         }
 
 
@@ -352,18 +362,6 @@ namespace HaoYueNet.ClientNetworkNet4x
             }
         }
 
-        public static byte[] Serizlize(IMessage msg)
-        {
-            return msg.ToByteArray();
-        }
-
-        public static T DeSerizlize<T>(byte[] bytes)
-        {
-            var msgType = typeof(T);
-            object msg = Activator.CreateInstance(msgType);
-            ((IMessage)msg).MergeFrom(bytes);
-            return (T)msg;
-        }
 
         public void LogOut(string Msg)
         {

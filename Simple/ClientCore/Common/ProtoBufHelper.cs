@@ -4,12 +4,10 @@ namespace ClientCore.Common
 {
     public static class ProtoBufHelper
     {
-
         public static byte[] Serizlize(IMessage msg)
         {
             return msg.ToByteArray();
         }
-
         public static T DeSerizlize<T>(byte[] bytes)
         {
             var msgType = typeof(T);

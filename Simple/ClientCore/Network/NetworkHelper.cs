@@ -1,4 +1,5 @@
 ﻿using AxibugProtobuf;
+using Google.Protobuf;
 using HaoYueNet.ClientNetwork;
 using System;
 using System.Collections.Generic;

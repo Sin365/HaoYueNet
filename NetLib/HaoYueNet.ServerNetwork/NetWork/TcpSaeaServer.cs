@@ -1,8 +1,7 @@
-﻿using Google.Protobuf;
-using HunterProtobufCore;
+﻿//using HunterProtobufCore;
 using System.Net;
 using System.Net.Sockets;
-
+using static HaoYueNet.ServerNetwork.BaseData;
 
 namespace HaoYueNet.ServerNetwork
 {
@@ -646,11 +645,12 @@ namespace HaoYueNet.ServerNetwork
         public void SendToSocket(Socket sk, int CMDID, int ERRCODE, byte[] data)
         {
             AsyncUserToken token = GetAsyncUserTokenForSocket(sk);
-            HunterNet_S2C _s2cdata = new HunterNet_S2C();
+            /*HunterNet_S2C _s2cdata = new HunterNet_S2C();
             _s2cdata.HunterNetCoreCmdID = CMDID;
             _s2cdata.HunterNetCoreData = ByteString.CopyFrom(data);
             _s2cdata.HunterNetCoreERRORCode = ERRCODE;
-            byte[] _finaldata = Serizlize(_s2cdata);
+            byte[] _finaldata = Serizlize(_s2cdata);*/
+            byte[] _finaldata = HunterNet_S2C.CreatePkgData((ushort)CMDID, (ushort)ERRCODE, data);
             SendWithIndex(token, _finaldata);
         }
 
@@ -668,10 +668,14 @@ namespace HaoYueNet.ServerNetwork
             {
                 try
                 {
-                    HunterNet_C2S _s2c = DeSerizlize<HunterNet_C2S>(data);
                     //将数据包交给后台处理,这里你也可以新开个线程来处理.加快速度.  
+                    /*
+                    HunterNet_C2S _s2c = DeSerizlize<HunterNet_C2S>(data);
                     OnReceive?.Invoke(sk, (int)_s2c.HunterNetCoreCmdID, _s2c.HunterNetCoreData.ToArray());
                     //DataCallBack(sk, (int)_s2c.HunterNetCoreCmdID, _s2c.HunterNetCoreData.ToArray());
+                    */
+                    HunterNet_C2S.AnalysisPkgData(data, out ushort CmdID, out byte[] resultdata);
+                    OnReceive?.Invoke(sk, CmdID, resultdata);
                 }
                 catch (Exception ex)
                 {
@@ -738,17 +742,5 @@ namespace HaoYueNet.ServerNetwork
         }
         #endregion
 
-        public static byte[] Serizlize(IMessage msg)
-        {
-            return msg.ToByteArray();
-        }
-
-        public static T DeSerizlize<T>(byte[] bytes)
-        {
-            var msgType = typeof(T);
-            object msg = Activator.CreateInstance(msgType);
-            ((IMessage)msg).MergeFrom(bytes);
-            return (T)msg;
-        }
     }
 }

@@ -17,7 +17,7 @@ namespace ClientCore.Manager
                 LoginType = 0,
                 Account = Account,
             };
-            App.networkHelper.SendToServer((int)CommandID.CmdLogin, NetworkHelper.Serizlize(msg));
+            App.networkHelper.SendToServer((int)CommandID.CmdLogin, ProtoBufHelper.Serizlize(msg));
         }
 
         public void RecvLoginMsg(byte[] reqData)

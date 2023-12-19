@@ -1,7 +1,6 @@
-﻿using Google.Protobuf;
-using HunterProtobufCore;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
+using static HaoYueNet.ClientNetwork.BaseData;
 
 namespace HaoYueNet.ClientNetwork
 {
@@ -165,11 +164,13 @@ namespace HaoYueNet.ClientNetwork
         public void SendToSocket(int CMDID, int ERRCODE, byte[] data)
         {
             //LogOut("准备数据 CMDID=> "+CMDID);
-            HunterNet_S2C _s2sdata = new HunterNet_S2C();
+            /*HunterNet_S2C _s2sdata = new HunterNet_S2C();
             _s2sdata.HunterNetCoreCmdID = CMDID;
             _s2sdata.HunterNetCoreERRORCode = ERRCODE;
             _s2sdata.HunterNetCoreData = ByteString.CopyFrom(data);
-            byte[] _finaldata = Serizlize(_s2sdata);
+            byte[] _finaldata = Serizlize(_s2sdata);*/
+
+            byte[] _finaldata = HunterNet_S2C.CreatePkgData((ushort)CMDID, (ushort)ERRCODE, data);
             SendToSocket(_finaldata);
         }
 
@@ -245,10 +246,13 @@ namespace HaoYueNet.ClientNetwork
                 //LogOut("收到心跳包");
                 return;
             }
-            
+
+            /*
             HunterNet_S2C _c2s = DeSerizlize<HunterNet_S2C>(data);
-            
             OnDataCallBack(_c2s.HunterNetCoreCmdID, _c2s.HunterNetCoreERRORCode, _c2s.HunterNetCoreData.ToArray());
+            */
+            HunterNet_S2C.AnalysisPkgData(data, out ushort CmdID, out ushort Error, out byte[] resultdata);
+            OnDataCallBack(CmdID, Error, resultdata);
         }
 
         MemoryStream memoryStream = new MemoryStream();//开辟一个内存流
@@ -352,19 +356,6 @@ namespace HaoYueNet.ClientNetwork
 
                 SendHeartbeat();
             }
-        }
-
-        public static byte[] Serizlize(IMessage msg)
-        {
-            return msg.ToByteArray();
-        }
-
-        public static T DeSerizlize<T>(byte[] bytes)
-        {
-            var msgType = typeof(T);
-            object msg = Activator.CreateInstance(msgType);
-            ((IMessage)msg).MergeFrom(bytes);
-            return (T)msg;
         }
 
         public void LogOut(string Msg)
