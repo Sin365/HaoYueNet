@@ -40,11 +40,13 @@ namespace HaoYueNet.ClientNetworkNet4x
 
         public static string LastConnectIP;
         public static int LastConnectPort;
+        public bool bDetailedLog = false;
 
-        public bool Init(string IP, int port, bool bBindReuseAddress = false, int bBindport = 0)
+        public bool Init(string IP, int port, bool isHadDetailedLog = true, bool bBindReuseAddress = false, int bBindport = 0)
         {
             LogOut("==>初始化网络核心");
 
+            bDetailedLog = isHadDetailedLog;
             RevIndex = MaxRevIndexNum;
             SendIndex = MaxSendIndexNum;
 
@@ -65,13 +67,21 @@ namespace HaoYueNet.ClientNetworkNet4x
             //带回调的
             try
             {
-                LogOut("连接到远程IP " + IP + ":" + port);
+                if (bDetailedLog)
+                    LogOut("连接到远程IP " + IP + ":" + port);
+                else
+                    LogOut("连接到远程服务");
+
                 client.Connect(IP, port);
                 Thread thread = new Thread(Recive);
                 thread.IsBackground = true;
                 thread.Start(client);
                 int localport = ((IPEndPoint)client.LocalEndPoint).Port;
-                LogOut($"连接成功!连接到远程IP->{IP}:{port} | 本地端口->{localport}");
+
+                if (bDetailedLog)
+                    LogOut($"连接成功!连接到远程IP->{IP}:{port} | 本地端口->{localport}");
+                else
+                    LogOut("连接成功!");
 
                 if (_heartTimer == null)
                 {
@@ -81,14 +91,20 @@ namespace HaoYueNet.ClientNetworkNet4x
                 _heartTimer.Elapsed += CheckUpdatetimer_Elapsed;
                 _heartTimer.AutoReset = true;
                 _heartTimer.Enabled = true;
-                LogOut("开启心跳包检测");
+
+                if (bDetailedLog)
+                    LogOut("开启心跳包检测");
 
                 OnConnected?.Invoke(true);
                 return true;
             }
             catch (Exception ex)
             {
-                LogOut("连接失败：" + ex.ToString());
+                if (bDetailedLog)
+                    LogOut("连接失败：" + ex.ToString());
+                else
+                    LogOut("连接失败");
+
                 OnConnected?.Invoke(false);
                 return false;
             }
@@ -218,7 +234,9 @@ namespace HaoYueNet.ClientNetworkNet4x
         /// </summary>
         private void OnCloseReady()
         {
-            LogOut("关闭心跳包计数");
+
+            if (bDetailedLog)
+                LogOut("关闭心跳包计数");
             _heartTimer.Enabled = false;
             _heartTimer.Elapsed -= CheckUpdatetimer_Elapsed;
             LogOut("关闭连接");
