@@ -8,13 +8,6 @@ namespace HaoYueNet.ClientNetwork
     {
         private Socket client;
 
-
-        ////响应倒计时计数最大值
-        //private static int MaxRevIndexNum = 6;
-
-        ////发送倒计时计数最大值
-        //private static int MaxSendIndexNum = 3;
-
         //响应倒计时计数最大值
         private static int MaxRevIndexNum = 50;
 
@@ -132,25 +125,25 @@ namespace HaoYueNet.ClientNetwork
             client.Send(data);
         }
 
-        //拼接头长度
-        private byte[] SendDataWithHead(byte[] message)
-        {
+        ////拼接头长度
+        //private byte[] SendDataWithHead(byte[] message)
+        //{
 
-            MemoryStream memoryStream = new MemoryStream();//创建一个内存流
+        //    MemoryStream memoryStream = new MemoryStream();//创建一个内存流
 
-            byte[] BagHead = BitConverter.GetBytes(message.Length + 4);//往字节数组中写入包头（包头自身的长度和消息体的长度）的长度
+        //    byte[] BagHead = BitConverter.GetBytes(message.Length + 4);//往字节数组中写入包头（包头自身的长度和消息体的长度）的长度
 
-            memoryStream.Write(BagHead, 0, BagHead.Length);//将包头写入内存流
+        //    memoryStream.Write(BagHead, 0, BagHead.Length);//将包头写入内存流
 
-            memoryStream.Write(message, 0, message.Length);//将消息体写入内存流
+        //    memoryStream.Write(message, 0, message.Length);//将消息体写入内存流
 
-            byte[] HeadAndBody = memoryStream.ToArray();//将内存流中的数据写入字节数组
+        //    byte[] HeadAndBody = memoryStream.ToArray();//将内存流中的数据写入字节数组
 
-            memoryStream.Close();//关闭内存
-            memoryStream.Dispose();//释放资源
+        //    memoryStream.Close();//关闭内存
+        //    memoryStream.Dispose();//释放资源
 
-            return HeadAndBody;
-        }
+        //    return HeadAndBody;
+        //}
 
         /// <summary>
         /// 供外部调用 发送消息
