@@ -7,10 +7,6 @@ namespace HaoYueNet.ServerNetwork
 {
     public class TcpSaeaServer
     {
-        /// <summary>
-        /// 心跳包数据
-        /// </summary>
-        static byte[] HeartbeatData = new byte[5] { 0x05, 0x00, 0x00, 0x00, 0x00 };
         //响应倒计时计数最大值
         //public int MaxRevIndexNum { get; set; } = 5;
         ////发送倒计时计数最大值
@@ -523,7 +519,15 @@ namespace HaoYueNet.ServerNetwork
                     {
                         TokenWithMsg msg = msg_pool.Dequeue();
                         //OutNetLog("从信息池取出发送");
-                        SendMessage(msg.token, msg.message);
+                        //是心跳包
+                        if (msg.bHeartbeat)
+                        {
+                            SendHeartbeatMessage(msg.token);
+                        }
+                        else
+                        {
+                            SendMessage(msg.token,msg.CMDID,msg.Error,msg.data);
+                        }
                         msg = null;
                     }
                     catch
@@ -540,7 +544,7 @@ namespace HaoYueNet.ServerNetwork
             }
 
         }
-
+        /*
         public void SendMessage(AsyncUserToken token, byte[] message,bool dontNeedHead = false)
         {
             if (token == null || token.Socket == null || !token.Socket.Connected)
@@ -579,8 +583,80 @@ namespace HaoYueNet.ServerNetwork
                 OutNetLog(e.ToString());
             }
         }
+        */
 
-        //拼接长度
+        public void SendMessage(AsyncUserToken token,UInt16 CmdID, UInt16 Error, byte[] data)
+        {
+            if (token == null || token.Socket == null || !token.Socket.Connected)
+                return;
+            try
+            {
+                if (m_Sendpool.Count > 0)
+                {
+                    SocketAsyncEventArgs myreadEventArgs = m_Sendpool.Pop();
+                    myreadEventArgs.UserToken = token;
+                    myreadEventArgs.AcceptSocket = token.Socket;
+                    //myreadEventArgs.SetBuffer(message, 0, message.Length);  //将数据放置进去.  
+                    //更换为CMDID和Data直接写入SocketAsyncEventArgs的Buff
+                    HunterNet_S2C.SetDataToSocketAsyncEventArgs(myreadEventArgs, CmdID, Error, data);
+
+                    //若不需要等待
+                    if (!token.Socket.SendAsync(myreadEventArgs))
+                    {
+                        m_Sendpool.Push(myreadEventArgs);
+                    }
+                    return;
+                }
+                else
+                {
+                    //先压入队列，等待m_Sendpool回收
+                    msg_pool.Enqueue(new TokenWithMsg() { token = token, CMDID = CmdID, Error = Error, data = data });
+                    //OutNetLog("！！！！压入消息发送队列MSG_Pool");
+                    return;
+                }
+            }
+            catch (Exception e)
+            {
+                OutNetLog(e.ToString());
+            }
+        }
+
+        public void SendHeartbeatMessage(AsyncUserToken token)
+        {
+            if (token == null || token.Socket == null || !token.Socket.Connected)
+                return;
+            try
+            {
+                if (m_Sendpool.Count > 0)
+                {
+                    SocketAsyncEventArgs myreadEventArgs = m_Sendpool.Pop();
+                    myreadEventArgs.UserToken = token;
+                    myreadEventArgs.AcceptSocket = token.Socket;
+                    //直接写入SocketAsyncEventArgs的Buff
+                    HunterNet_Heartbeat.SetDataToSocketAsyncEventArgs(myreadEventArgs);
+
+                    //若不需要等待
+                    if (!token.Socket.SendAsync(myreadEventArgs))
+                    {
+                        m_Sendpool.Push(myreadEventArgs);
+                    }
+                    return;
+                }
+                else
+                {
+                    //先压入队列，等待m_Sendpool回收
+                    msg_pool.Enqueue(new TokenWithMsg() { token = token, bHeartbeat = true });
+                    //OutNetLog("！！！！压入消息发送队列MSG_Pool");
+                    return;
+                }
+            }
+            catch (Exception e)
+            {
+                OutNetLog(e.ToString());
+            }
+        }
+
+        //拼接头部长度
         private static byte[] SendDataWithHead(byte[] message)
         {
 
@@ -589,7 +665,6 @@ namespace HaoYueNet.ServerNetwork
             byte[] BagHead = BitConverter.GetBytes(message.Length + 4);//往字节数组中写入包头（包头自身的长度和消息体的长度）的长度
 
             memoryStream.Write(BagHead, 0, BagHead.Length);//将包头写入内存流
-
             memoryStream.Write(message, 0, message.Length);//将消息体写入内存流
 
             byte[] HeadAndBody = memoryStream.ToArray();//将内存流中的数据写入字节数组
@@ -623,12 +698,12 @@ namespace HaoYueNet.ServerNetwork
         /// 发送数据并计数
         /// </summary>
         /// <param name="data"></param>
-        private void SendWithIndex(AsyncUserToken token, byte[] data)
+        private void SendWithIndex(AsyncUserToken token, UInt16 CmdID, UInt16 ERRCODE, byte[] data)
         {
             try
             {
                 //发送数据
-                SendMessage(token, data);
+                SendMessage(token, CmdID, ERRCODE, data);
                 token.SendIndex = MaxSendIndexNum;
             }
             catch
@@ -650,8 +725,10 @@ namespace HaoYueNet.ServerNetwork
             _s2cdata.HunterNetCoreData = ByteString.CopyFrom(data);
             _s2cdata.HunterNetCoreERRORCode = ERRCODE;
             byte[] _finaldata = Serizlize(_s2cdata);*/
-            byte[] _finaldata = HunterNet_S2C.CreatePkgData((ushort)CMDID, (ushort)ERRCODE, data);
-            SendWithIndex(token, _finaldata);
+
+            //byte[] _finaldata = HunterNet_S2C.CreatePkgData((ushort)CMDID, (ushort)ERRCODE, data);
+
+            SendWithIndex(token, (ushort)CMDID, (ushort)ERRCODE, data);
         }
 
         private void DataCallBackReady(AsyncUserToken sk, byte[] data)
@@ -697,7 +774,7 @@ namespace HaoYueNet.ServerNetwork
         /// </summary>
         /// <param name="sk"></param>
         /// 
-        private void SendHeartbeat(AsyncUserToken token)
+        private void SendHeartbeatWithIndex(AsyncUserToken token)
         {
             if (token == null || token.Socket == null || !token.Socket.Connected)
                 return;
@@ -705,7 +782,7 @@ namespace HaoYueNet.ServerNetwork
             {
                 //OutNetLog(DateTime.Now.ToString() + "发送心跳包");
                 token.SendIndex = MaxSendIndexNum;
-                SendMessage(token, HeartbeatData, true);
+                SendHeartbeatMessage(token);
             }
             catch (Exception e)
             {
@@ -736,7 +813,7 @@ namespace HaoYueNet.ServerNetwork
                 {
                     //重置倒计时计数
                     m_clients[i].SendIndex = MaxSendIndexNum;
-                    SendHeartbeat(m_clients[i]);
+                    SendHeartbeatWithIndex(m_clients[i]);
                 }
             }
         }

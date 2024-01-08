@@ -9,10 +9,6 @@ namespace HaoYueNet.ClientNetwork
     {
         private Socket client;
 
-        /// <summary>
-        /// 心跳包数据
-        /// </summary>
-        static byte[] HeartbeatData = new byte[5] { 0x05, 0x00, 0x00, 0x00, 0x00 };
 
         ////响应倒计时计数最大值
         //private static int MaxRevIndexNum = 6;
@@ -115,7 +111,8 @@ namespace HaoYueNet.ClientNetwork
 
         private void SendToSocket(byte[] data)
         {
-            data = SendDataWithHead(data);
+            //已拼接包长度，这里不再需要拼接长度
+            //data = SendDataWithHead(data);
             try
             {
                 SendWithIndex(data);
@@ -156,25 +153,25 @@ namespace HaoYueNet.ClientNetwork
             client.Send(data);
         }
 
-        //拼接头长度
-        private byte[] SendDataWithHead(byte[] message)
-        {
+        ////拼接头长度
+        //private byte[] SendDataWithHead(byte[] message)
+        //{
 
-            MemoryStream memoryStream = new MemoryStream();//创建一个内存流
+        //    MemoryStream memoryStream = new MemoryStream();//创建一个内存流
 
-            byte[] BagHead = BitConverter.GetBytes(message.Length + 4);//往字节数组中写入包头（包头自身的长度和消息体的长度）的长度
+        //    byte[] BagHead = BitConverter.GetBytes(message.Length + 4);//往字节数组中写入包头（包头自身的长度和消息体的长度）的长度
 
-            memoryStream.Write(BagHead, 0, BagHead.Length);//将包头写入内存流
+        //    memoryStream.Write(BagHead, 0, BagHead.Length);//将包头写入内存流
 
-            memoryStream.Write(message, 0, message.Length);//将消息体写入内存流
+        //    memoryStream.Write(message, 0, message.Length);//将消息体写入内存流
 
-            byte[] HeadAndBody = memoryStream.ToArray();//将内存流中的数据写入字节数组
+        //    byte[] HeadAndBody = memoryStream.ToArray();//将内存流中的数据写入字节数组
 
-            memoryStream.Close();//关闭内存
-            memoryStream.Dispose();//释放资源
+        //    memoryStream.Close();//关闭内存
+        //    memoryStream.Dispose();//释放资源
 
-            return HeadAndBody;
-        }
+        //    return HeadAndBody;
+        //}
 
         /// <summary>
         /// 供外部调用 发送消息
@@ -343,11 +340,18 @@ namespace HaoYueNet.ClientNetwork
                             //把头去掉，就可以吃了，蛋白质是牛肉的六倍
                             //DataCallBackReady(getData.Skip(StartIndex+4).Take(HeadLength-4).ToArray());
 
-                            //改为Array.Copy 提升效率
                             int CoreLenght = HeadLength - 4;
-                            byte[] retData = new byte[CoreLenght];
-                            Array.Copy(getData, StartIndex + 4, retData, 0, CoreLenght);
-                            DataCallBackReady(retData);
+
+                            //改为Array.Copy 提升效率
+                            //byte[] retData = new byte[CoreLenght];
+                            //Array.Copy(getData, StartIndex + 4, retData, 0, CoreLenght);
+                            //DataCallBackReady(retData);
+
+                            //用Span
+                            Span<byte> getData_span = getData;
+                            getData_span = getData_span.Slice(StartIndex + 4,CoreLenght);
+                            DataCallBackReady(getData_span.ToArray());
+
                             StartIndex += HeadLength;//当读取一条完整的数据后，读取数据的起始下标应为当前接受到的消息体的长度（当前数据的尾部或下一条消息的首部）
                         }
                     }
