@@ -44,11 +44,11 @@ OnReceive//收到网络数据
 整合Protobuff生成。
 
 #最简接入示例（服务端和客户端）
-若您的应用相对简单，您甚至可以基于Simple增加功能，快速达成目标.
+若您的应用相对简单，您甚至可以基于Sample增加功能，快速达成目标.
 
 Server:
 
-```
+```csharp
 TcpSaeaServer Srv = new TcpSaeaServer(1024, 1024);//实例化，最大连接数和最大接收字节数
 Srv.OnClientNumberChange += (int num, AsyncUserToken client) => { /* 连接数发生变化*/};
 Srv.OnDisconnected += (AsyncUserToken client) => { /* 断开连接 */};
@@ -64,7 +64,7 @@ Srv.Start(new IPEndPoint(IPAddress.Any.Address, 6000));//启动
 
 Client:
 
-```
+```csharp
 NetworkHelperCore network = new NetworkHelperCore();
 network.OnClose += ()=> { /* 断开连接 */}; 
 network.OnConnected += (bool IsConnect) => { /* 连接回到，成功或失败 */};
