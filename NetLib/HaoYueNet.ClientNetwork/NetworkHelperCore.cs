@@ -206,24 +206,6 @@ namespace HaoYueNet.ClientNetwork
         /// </summary>
         public event OnLogOutHandler OnLogOut;
 
-        ///// <summary>
-        ///// 用于调用者回调的虚函数
-        ///// </summary>
-        ///// <param name="data"></param>
-        //public virtual void DataCallBack(int CMDID,int ERRCODE,byte[] data)
-        //{
-
-        //}
-
-        ///// <summary>
-        ///// 断开连接
-        ///// </summary>
-        ///// <param name="sk"></param>
-        //public virtual void OnClose()
-        //{
-
-        //}
-
         /// <summary>
         /// 做好处理的连接管理
         /// </summary>
@@ -239,7 +221,6 @@ namespace HaoYueNet.ClientNetwork
             client.Close();
             OnClose?.Invoke();
         }
-
 
         /// <summary>
         /// 主动关闭连接
