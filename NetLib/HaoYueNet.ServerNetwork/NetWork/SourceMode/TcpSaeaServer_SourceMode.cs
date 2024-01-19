@@ -39,7 +39,7 @@ namespace HaoYueNet.ServerNetwork
         /// </summary>  
         /// <param name="token">客户端</param>  
         /// <param name="buff">客户端数据</param>  
-        public delegate void OnReceiveDataHandler(AsyncUserToken sk, int CMDID, byte[] data);
+        public delegate void OnReceiveDataHandler(AsyncUserToken sk, byte[] data);
         /// <summary>
         /// 断开连接
         /// </summary>
@@ -491,18 +491,10 @@ namespace HaoYueNet.ServerNetwork
         /// </summary>
         /// <param name="CMDID"></param>
         /// <param name="data">序列化之后的数据</param>
-        public void SendToSocket(Socket sk, int CMDID, int ERRCODE, byte[] data)
+        public void SendToSocket(Socket sk, byte[] data)
         {
             AsyncUserToken token = GetAsyncUserTokenForSocket(sk);
-            /*HunterNet_S2C _s2cdata = new HunterNet_S2C();
-            _s2cdata.HunterNetCoreCmdID = CMDID;
-            _s2cdata.HunterNetCoreData = ByteString.CopyFrom(data);
-            _s2cdata.HunterNetCoreERRORCode = ERRCODE;
-            byte[] _finaldata = Serizlize(_s2cdata);*/
-
-            //byte[] _finaldata = HunterNet_S2C.CreatePkgData((ushort)CMDID, (ushort)ERRCODE, data);
-
-            SendWithIndex(token, (ushort)CMDID, (ushort)ERRCODE, data);
+            SendWithIndex(token,  data);
         }
         void SendForMsgPool()
         {
@@ -588,12 +580,12 @@ namespace HaoYueNet.ServerNetwork
         /// 发送数据并计数
         /// </summary>
         /// <param name="data"></param>
-        void SendWithIndex(AsyncUserToken token, UInt16 CmdID, UInt16 ERRCODE, byte[] data)
+        void SendWithIndex(AsyncUserToken token,byte[] data)
         {
             try
             {
                 //发送数据
-                SendMessage(token, CmdID, ERRCODE, data);
+                SendMessage(token, data);
                 token.SendIndex = MaxSendIndexNum;
             }
             catch
@@ -643,28 +635,14 @@ namespace HaoYueNet.ServerNetwork
             //增加接收计数
             sk.RevIndex = MaxRevIndexNum;
 
-            if (data.Length == 1 && data[0] == 0x00)//心跳包
+            try
             {
-                //OutNetLog("收到心跳包");
-                //无处理
+                //将数据包交给后台处理,这里你也可以新开个线程来处理.加快速度. 
+                OnReceive?.Invoke(sk, data);
             }
-            else
+            catch (Exception ex)
             {
-                try
-                {
-                    //将数据包交给后台处理,这里你也可以新开个线程来处理.加快速度.  
-                    /*
-                    HunterNet_C2S _s2c = DeSerizlize<HunterNet_C2S>(data);
-                    OnReceive?.Invoke(sk, (int)_s2c.HunterNetCoreCmdID, _s2c.HunterNetCoreData.ToArray());
-                    //DataCallBack(sk, (int)_s2c.HunterNetCoreCmdID, _s2c.HunterNetCoreData.ToArray());
-                    */
-                    HunterNet_C2S.AnalysisPkgData(data, out ushort CmdID, out byte[] resultdata);
-                    OnReceive?.Invoke(sk, CmdID, resultdata);
-                }
-                catch (Exception ex)
-                {
-                    OutNetLog("数据解析错误");
-                }
+                OutNetLog("数据解析错误");
             }
         }
         private void OutNetLog(string msg)

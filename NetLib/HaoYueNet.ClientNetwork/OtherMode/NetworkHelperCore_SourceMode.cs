@@ -2,7 +2,7 @@
 using System.Net.Sockets;
 using static HaoYueNet.ClientNetwork.BaseData;
 
-namespace HaoYueNet.ClientNetwork
+namespace HaoYueNet.ClientNetwork.OtherMode
 {
     public class NetworkHelperCore_SourceMode
     {
@@ -21,9 +21,9 @@ namespace HaoYueNet.ClientNetwork
         private static int MaxSendIndexNum = 3;
 
         //响应倒计时计数
-        private static int RevIndex=0;
+        private static int RevIndex = 0;
         //发送倒计时计数
-        private static int SendIndex=0;
+        private static int SendIndex = 0;
 
         //计时器间隔
         private static int TimerInterval = 3000;
@@ -32,7 +32,7 @@ namespace HaoYueNet.ClientNetwork
         public static int LastConnectPort;
         public bool bDetailedLog = false;
 
-        public bool Init(string IP, int port,bool isHadDetailedLog = true, bool bBindReuseAddress = false,int bBindport = 0)
+        public bool Init(string IP, int port, bool isHadDetailedLog = true, bool bBindReuseAddress = false, int bBindport = 0)
         {
             LogOut("==>初始化网络核心");
 
@@ -57,7 +57,7 @@ namespace HaoYueNet.ClientNetwork
             //带回调的
             try
             {
-                if(bDetailedLog)
+                if (bDetailedLog)
                     LogOut("连接到远程IP " + IP + ":" + port);
                 else
                     LogOut("连接到远程服务");
@@ -184,7 +184,7 @@ namespace HaoYueNet.ClientNetwork
         {
             OnCloseReady();
         }
-        
+
         private void DataCallBackReady(byte[] data)
         {
             //增加接收计数
@@ -201,7 +201,7 @@ namespace HaoYueNet.ClientNetwork
             while (true)
             {
                 byte[] buffer = new byte[1024 * 1024 * 2];
-                int effective=0;
+                int effective = 0;
                 try
                 {
                     effective = client.Receive(buffer);
@@ -210,7 +210,7 @@ namespace HaoYueNet.ClientNetwork
                         continue;
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     //远程主机强迫关闭了一个现有的连接
                     OnCloseReady();
