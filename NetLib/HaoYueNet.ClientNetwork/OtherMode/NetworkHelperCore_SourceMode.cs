@@ -217,16 +217,13 @@ namespace HaoYueNet.ClientNetwork.OtherMode
                     return;
                     //断开连接
                 }
-                memoryStream.Write(buffer, 0, effective);//将接受到的数据写入内存流中
-                while (true)
+                if (effective > 0)//如果接受到的消息不为0（不为空）
                 {
-                    if (effective > 0)//如果接受到的消息不为0（不为空）
-                    {
-                        DataCallBackReady(memoryStream.ToArray());
-                        //流复用的方式 不用重新new申请
-                        memoryStream.Position = 0;
-                        memoryStream.SetLength(0);
-                    }
+                    memoryStream.Write(buffer, 0, effective);//将接受到的数据写入内存流中
+                    DataCallBackReady(memoryStream.ToArray());
+                    //流复用的方式 不用重新new申请
+                    memoryStream.Position = 0;
+                    memoryStream.SetLength(0);
                 }
             }
         }

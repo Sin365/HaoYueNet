@@ -1,4 +1,5 @@
 ﻿//using HunterProtobufCore;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using static HaoYueNet.ServerNetwork.BaseData;
@@ -11,7 +12,7 @@ namespace HaoYueNet.ServerNetwork
         protected int MaxRevIndexNum = 50;//响应倒计时计数最大值
         protected int MaxSendIndexNum = 3;//发送倒计时计数最大值
         protected static int TimerInterval = 3000;//计时器间隔
-        protected System.Timers.Timer _heartTimer;//心跳包计数器
+        //protected System.Timers.Timer _heartTimer;//心跳包计数器
         public int m_maxConnectNum;    //最大连接数  
         public int m_revBufferSize;    //最大接收字节数  
         protected BufferManager m_bufferManager;
@@ -156,12 +157,12 @@ namespace HaoYueNet.ServerNetwork
 
                 OutNetLog("监听:" + listenSocket.LocalEndPoint.ToString());
 
-                _heartTimer = new System.Timers.Timer();
-                _heartTimer.Interval = TimerInterval;
-                _heartTimer.Elapsed += CheckUpdatetimer_Elapsed;
-                _heartTimer.AutoReset = true;
-                _heartTimer.Enabled = true;
-                OutNetLog("开启定时心跳包");
+                //_heartTimer = new System.Timers.Timer();
+                //_heartTimer.Interval = TimerInterval;
+                //_heartTimer.Elapsed += CheckUpdatetimer_Elapsed;
+                //_heartTimer.AutoReset = true;
+                //_heartTimer.Enabled = true;
+                //OutNetLog("开启定时心跳包");
 
                 return true;
             }
@@ -377,9 +378,6 @@ namespace HaoYueNet.ServerNetwork
                 if (e.BytesTransferred > 0 && e.SocketError == SocketError.Success)
                 {
                     //读取数据  
-                    //byte[] data = new byte[e.BytesTransferred];
-                    //Array.Copy(e.Buffer, e.Offset, data, 0, e.BytesTransferred);
-                    //lock (token.Buffer)
                     lock(token.memoryStream)
                     {
                         //token.Buffer.AddRange(data);
@@ -387,58 +385,15 @@ namespace HaoYueNet.ServerNetwork
                     }
                     do
                     {
-                        //如果包头不完整
-                        //if (token.Buffer.Count < 4)
-                        if (token.memoryStream.Length < 4)
-                            break;
 
-                        //判断包的长度  
-                        //byte[] lenBytes = token.Buffer.GetRange(0, 4).ToArray();
-                        //int packageLen = BitConverter.ToInt32(lenBytes, 0) - 4;
-                        //if (packageLen > token.Buffer.Count - 4)
-                        //{   //长度不够时,退出循环,让程序继续接收  
-                        //    break;
-                        //}
-
-                        long FristBeginPos = token.memoryStream.Position;
-                        byte[] lenBytes = new byte[4];
-                        token.memoryStream.Seek(0, SeekOrigin.Begin);
-                        token.memoryStream.Read(lenBytes,0,4);
-                        int packageLen = BitConverter.ToInt32(lenBytes, 0) - 4;
-                        if (packageLen > token.memoryStream.Length - 4)
-                        {   //长度不够时,退出循环,让程序继续接收  
-                            break;
-                        }
-
-                        //包够长时,则提取出来,交给后面的程序去处理  
-                        //byte[] rev = token.Buffer.GetRange(4, packageLen).ToArray();
-
-                        byte[] rev = new byte[packageLen];
-                        token.memoryStream.Seek(4, SeekOrigin.Begin);
-                        token.memoryStream.Read(rev, 0, packageLen);
-
-                        ////从数据池中移除这组数据  
-                        //lock (token.Buffer)
-                        //{
-                        //    token.Buffer.RemoveRange(0, packageLen + 4);
-                        //}
-
-                        token.memoryStream.Seek(FristBeginPos, SeekOrigin.Begin);
-                        //从数据池中移除这组数据
-                        lock (token.memoryStream)
-                        {
-                            int numberOfBytesToRemove = packageLen + 4;
-                            byte[] buf = token.memoryStream.GetBuffer();
-                            Buffer.BlockCopy(buf, numberOfBytesToRemove, buf, 0, (int)token.memoryStream.Length - numberOfBytesToRemove);
-                            token.memoryStream.SetLength(token.memoryStream.Length - numberOfBytesToRemove);
-                        }
-
-                        DataCallBackReady(token, rev);
+                        DataCallBackReady(token,token.memoryStream.ToArray());
+                        //流复用的方式 不用重新new申请
+                        token.memoryStream.Position = 0;
+                        token.memoryStream.SetLength(0);
 
                         //这里API处理完后,并没有返回结果,当然结果是要返回的,却不是在这里, 这里的代码只管接收.  
                         //若要返回结果,可在API处理中调用此类对象的SendMessage方法,统一打包发送.不要被微软的示例给迷惑了.  
-                        //} while (token.Buffer.Count > 4);
-                    } while (token.memoryStream.Length > 4);
+                    } while (token.memoryStream.Length > 0);
 
                     //继续接收. 为什么要这么写,请看Socket.ReceiveAsync方法的说明  
                     if (!token.Socket.ReceiveAsync(e))
@@ -656,6 +611,7 @@ namespace HaoYueNet.ServerNetwork
         #endregion
 
         #region 心跳包
+        /*
         /// <summary>
         /// 发送心跳包
         /// </summary>
@@ -704,6 +660,7 @@ namespace HaoYueNet.ServerNetwork
                 }
             }
         }
+        */
         #endregion
     }
 }
