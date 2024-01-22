@@ -321,30 +321,34 @@ namespace HaoYueNet.ServerNetwork
             try
             {
                 Interlocked.Increment(ref m_clientCount);
-                // Get the socket for the accepted client connection and put it into the   
-                //ReadEventArg object user token  
-                SocketAsyncEventArgs readEventArgs = m_Receivepool.Pop();
-                //TODO readEventArgs.UserToken这里的 UserToken 有可能是空
-                AsyncUserToken userToken;
-                if (readEventArgs.UserToken == null)
-                    readEventArgs.UserToken = new AsyncUserToken();
-
-                userToken = (AsyncUserToken)readEventArgs.UserToken;
-                userToken.Socket = e.AcceptSocket;
-                userToken.ConnectTime = DateTime.Now;
-                userToken.Remote = e.AcceptSocket.RemoteEndPoint;
-                userToken.IPAddress = ((IPEndPoint)(e.AcceptSocket.RemoteEndPoint)).Address;
-
-
-                userToken.RevIndex = MaxRevIndexNum;
-                userToken.SendIndex = MaxSendIndexNum;
-
-                AddUserToken(userToken);
-
-                OnClientNumberChange?.Invoke(1, userToken);
-                if (!e.AcceptSocket.ReceiveAsync(readEventArgs))
+                //确保监听结束时，有连接才抛给数据接收
+                if (e.AcceptSocket.RemoteEndPoint != null)
                 {
-                    ProcessReceive(readEventArgs);
+                    // Get the socket for the accepted client connection and put it into the   
+                    //ReadEventArg object user token  
+                    SocketAsyncEventArgs readEventArgs = m_Receivepool.Pop();
+                    //TODO readEventArgs.UserToken这里的 UserToken 有可能是空
+                    AsyncUserToken userToken;
+                    if (readEventArgs.UserToken == null)
+                        readEventArgs.UserToken = new AsyncUserToken();
+
+                    userToken = (AsyncUserToken)readEventArgs.UserToken;
+                    userToken.Socket = e.AcceptSocket;
+                    userToken.ConnectTime = DateTime.Now;
+                    userToken.Remote = e.AcceptSocket.RemoteEndPoint;
+                    userToken.IPAddress = ((IPEndPoint)(e.AcceptSocket.RemoteEndPoint)).Address;
+
+
+                    userToken.RevIndex = MaxRevIndexNum;
+                    userToken.SendIndex = MaxSendIndexNum;
+
+                    AddUserToken(userToken);
+
+                    OnClientNumberChange?.Invoke(1, userToken);
+                    if (!e.AcceptSocket.ReceiveAsync(readEventArgs))
+                    {
+                        ProcessReceive(readEventArgs);
+                    }
                 }
             }
             catch (Exception me)
