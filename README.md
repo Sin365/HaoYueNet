@@ -1,6 +1,6 @@
 # HaoYueNet
 
-.Net 7 的，自建基于IOCP的TCP的高性能网络库
+.Net 8 的，自建基于IOCP的TCP的高性能网络库
 
 使用Protobuff作为基础协议(网络库本身不依赖Protobuff，仅上层示例依赖）
 
