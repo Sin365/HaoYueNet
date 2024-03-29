@@ -141,16 +141,20 @@ namespace HaoYueNet.ClientNetwork
             //LogOut("发送心跳包");
         }
 
+        object sendLock = new object();
         /// <summary>
         /// 发送数据并计数
         /// </summary>
         /// <param name="data"></param>
         private void SendWithIndex(byte[] data)
         {
-            //增加发送计数
-            SendIndex = MaxSendIndexNum;
-            //发送数据
-            client.Send(data);
+            lock (sendLock) 
+            {
+                //增加发送计数
+                SendIndex = MaxSendIndexNum;
+                //发送数据
+                client.Send(data);
+            }
         }
 
         ////拼接头长度

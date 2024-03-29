@@ -378,22 +378,35 @@ namespace HaoYueNet.ServerNetwork
                 if (e.BytesTransferred > 0 && e.SocketError == SocketError.Success)
                 {
                     //读取数据  
-                    lock(token.memoryStream)
+
+                    //读取数据  
+                    byte[] data = new byte[e.BytesTransferred];
+                    Array.Copy(e.Buffer, e.Offset, data, 0, e.BytesTransferred);
+                    lock (token.Buffer)
+                    //lock(token.memoryStream)
                     {
-                        //token.Buffer.AddRange(data);
-                        token.memoryStream.Write(e.Buffer, e.Offset, e.BytesTransferred);
+                        token.Buffer.AddRange(data);
+                        //token.memoryStream.Write(e.Buffer, e.Offset, e.BytesTransferred);
+                        do
+                        {
+
+                            DataCallBackReady(token, data);
+                            //从数据池中移除这组数据  
+                            lock (token.Buffer)
+                            {
+                                token.Buffer.Clear();
+                            }
+
+                            //DataCallBackReady(token, token.memoryStream.ToArray());
+                            ////流复用的方式 不用重新new申请
+                            //token.memoryStream.Position = 0;
+                            //token.memoryStream.SetLength(0);
+
+                            //这里API处理完后,并没有返回结果,当然结果是要返回的,却不是在这里, 这里的代码只管接收.  
+                            //若要返回结果,可在API处理中调用此类对象的SendMessage方法,统一打包发送.不要被微软的示例给迷惑了.  
+                            //} while (token.memoryStream.Length > 0);
+                        } while (token.Buffer.Count > 4);
                     }
-                    do
-                    {
-
-                        DataCallBackReady(token,token.memoryStream.ToArray());
-                        //流复用的方式 不用重新new申请
-                        token.memoryStream.Position = 0;
-                        token.memoryStream.SetLength(0);
-
-                        //这里API处理完后,并没有返回结果,当然结果是要返回的,却不是在这里, 这里的代码只管接收.  
-                        //若要返回结果,可在API处理中调用此类对象的SendMessage方法,统一打包发送.不要被微软的示例给迷惑了.  
-                    } while (token.memoryStream.Length > 0);
 
                     //继续接收. 为什么要这么写,请看Socket.ReceiveAsync方法的说明  
                     if (!token.Socket.ReceiveAsync(e))
