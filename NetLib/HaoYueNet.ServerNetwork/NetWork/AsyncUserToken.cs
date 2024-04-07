@@ -33,14 +33,14 @@ namespace HaoYueNet.ServerNetwork
         /// <summary>  
         /// 数据缓存区  
         /// </summary>  
-        public List<byte> Buffer { get; set; }
+        //public List<byte> Buffer { get; set; }
 
-        //public MemoryStream memoryStream { get; set; }
+        public MemoryStream memoryStream { get; set; }
 
         public AsyncUserToken()
         {
-            this.Buffer = new List<byte>();
-            //this.memoryStream = new MemoryStream();
+            //this.Buffer = new List<byte>();
+            this.memoryStream = new MemoryStream();
         }
         /// <summary>
         /// 响应倒计时计数
