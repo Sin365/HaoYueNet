@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net.Sockets;
 
-namespace HaoYueNet.ClientNetworkNet4x
+namespace HaoYueNet.ServerNetworkNet4x
 {
     public static class BaseData
     {
@@ -37,8 +37,8 @@ namespace HaoYueNet.ClientNetworkNet4x
         {
             public static void SetDataToSocketAsyncEventArgs(SocketAsyncEventArgs myreadEventArgs, UInt16 CmdID, UInt16 Error, byte[] AddonBytes_Data)
             {
-                byte[] data =  CreatePkgData(CmdID, Error, AddonBytes_Data);
-                myreadEventArgs.SetBuffer(data,0, data.Length);
+                byte[] data = CreatePkgData(CmdID, Error, AddonBytes_Data);
+                myreadEventArgs.SetBuffer(data, 0, data.Length);
             }
 
             public static byte[] CreatePkgData(UInt16 CmdID, UInt16 Error, byte[] AddonBytes_Data)

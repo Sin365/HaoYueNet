@@ -18,16 +18,16 @@ namespace HaoYueNet.ClientNetworkNet4x
         private static int MaxSendIndexNum = 3;
 
         //响应倒计时计数
-        private static int RevIndex = 0;
+        private static int RevIndex=0;
         //发送倒计时计数
-        private static int SendIndex = 0;
+        private static int SendIndex=0;
 
         //计时器间隔
         private static int TimerInterval = 3000;
 
         private System.Timers.Timer _heartTimer;
 
-        public void Init(string IP, int port, bool bBindReuseAddress = false, int bBindport = 0)
+        public void Init(string IP, int port, bool bBindReuseAddress = false,int bBindport = 0)
         {
 
             LogOut("==>初始化网络核心");
@@ -128,25 +128,25 @@ namespace HaoYueNet.ClientNetworkNet4x
             client.Send(data);
         }
 
-        //拼接头长度
-        private byte[] SendDataWithHead(byte[] message)
-        {
+        ////拼接头长度
+        //private byte[] SendDataWithHead(byte[] message)
+        //{
 
-            MemoryStream memoryStream = new MemoryStream();//创建一个内存流
+        //    MemoryStream memoryStream = new MemoryStream();//创建一个内存流
 
-            byte[] BagHead = BitConverter.GetBytes(message.Length + 4);//往字节数组中写入包头（包头自身的长度和消息体的长度）的长度
+        //    byte[] BagHead = BitConverter.GetBytes(message.Length + 4);//往字节数组中写入包头（包头自身的长度和消息体的长度）的长度
 
-            memoryStream.Write(BagHead, 0, BagHead.Length);//将包头写入内存流
+        //    memoryStream.Write(BagHead, 0, BagHead.Length);//将包头写入内存流
 
-            memoryStream.Write(message, 0, message.Length);//将消息体写入内存流
+        //    memoryStream.Write(message, 0, message.Length);//将消息体写入内存流
 
-            byte[] HeadAndBody = memoryStream.ToArray();//将内存流中的数据写入字节数组
+        //    byte[] HeadAndBody = memoryStream.ToArray();//将内存流中的数据写入字节数组
 
-            memoryStream.Close();//关闭内存
-            memoryStream.Dispose();//释放资源
+        //    memoryStream.Close();//关闭内存
+        //    memoryStream.Dispose();//释放资源
 
-            return HeadAndBody;
-        }
+        //    return HeadAndBody;
+        //}
 
         /// <summary>
         /// 供外部调用 发送消息
@@ -226,7 +226,7 @@ namespace HaoYueNet.ClientNetworkNet4x
         {
             OnCloseReady();
         }
-
+        
         private void DataCallBackReady(byte[] data)
         {
 
@@ -257,7 +257,7 @@ namespace HaoYueNet.ClientNetworkNet4x
             while (true)
             {
                 byte[] buffer = new byte[1024 * 1024 * 2];
-                int effective = 0;
+                int effective=0;
                 try
                 {
                     effective = client.Receive(buffer);
@@ -266,7 +266,7 @@ namespace HaoYueNet.ClientNetworkNet4x
                         continue;
                     }
                 }
-                catch (Exception ex)
+                catch(Exception ex)
                 {
                     //远程主机强迫关闭了一个现有的连接
                     OnCloseReady();

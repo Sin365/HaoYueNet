@@ -1,4 +1,5 @@
-﻿using System;
+﻿//using HunterProtobufCore;
+using System;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -11,6 +12,13 @@ namespace HaoYueNet.ClientNetworkNet4x
     {
         private Socket client;
 
+
+        ////响应倒计时计数最大值
+        //private static int MaxRevIndexNum = 6;
+
+        ////发送倒计时计数最大值
+        //private static int MaxSendIndexNum = 3;
+
         //响应倒计时计数最大值
         private static int MaxRevIndexNum = 50;
 
@@ -18,9 +26,9 @@ namespace HaoYueNet.ClientNetworkNet4x
         private static int MaxSendIndexNum = 3;
 
         //响应倒计时计数
-        private static int RevIndex = 0;
+        private static int RevIndex=0;
         //发送倒计时计数
-        private static int SendIndex = 0;
+        private static int SendIndex=0;
 
         //计时器间隔
         private static int TimerInterval = 3000;
@@ -31,7 +39,7 @@ namespace HaoYueNet.ClientNetworkNet4x
         public static int LastConnectPort;
         public bool bDetailedLog = false;
 
-        public bool Init(string IP, int port, bool isHadDetailedLog = true, bool bBindReuseAddress = false, int bBindport = 0)
+        public bool Init(string IP, int port,bool isHadDetailedLog = true, bool bBindReuseAddress = false,int bBindport = 0)
         {
             LogOut("==>初始化网络核心");
 
@@ -56,7 +64,7 @@ namespace HaoYueNet.ClientNetworkNet4x
             //带回调的
             try
             {
-                if (bDetailedLog)
+                if(bDetailedLog)
                     LogOut("连接到远程IP " + IP + ":" + port);
                 else
                     LogOut("连接到远程服务");
@@ -136,16 +144,20 @@ namespace HaoYueNet.ClientNetworkNet4x
             //LogOut("发送心跳包");
         }
 
+        object sendLock = new object();
         /// <summary>
         /// 发送数据并计数
         /// </summary>
         /// <param name="data"></param>
         private void SendWithIndex(byte[] data)
         {
-            //增加发送计数
-            SendIndex = MaxSendIndexNum;
-            //发送数据
-            client.Send(data);
+            lock (sendLock) 
+            {
+                //增加发送计数
+                SendIndex = MaxSendIndexNum;
+                //发送数据
+                client.Send(data);
+            }
         }
 
         ////拼接头长度
@@ -173,7 +185,7 @@ namespace HaoYueNet.ClientNetworkNet4x
         /// </summary>
         /// <param name="CMDID"></param>
         /// <param name="data">序列化之后的数据</param>
-        public void SendToServer(int CMDID, byte[] data)
+        public void SendToServer(int CMDID,byte[] data)
         {
             //LogOut("准备数据 CMDID=> "+CMDID);
             /*
@@ -201,24 +213,6 @@ namespace HaoYueNet.ClientNetworkNet4x
         /// </summary>
         public event OnLogOutHandler OnLogOut;
 
-        ///// <summary>
-        ///// 用于调用者回调的虚函数
-        ///// </summary>
-        ///// <param name="data"></param>
-        //public virtual void DataCallBack(int CMDID,int ERRCODE,byte[] data)
-        //{
-
-        //}
-
-        ///// <summary>
-        ///// 断开连接
-        ///// </summary>
-        ///// <param name="sk"></param>
-        //public virtual void OnClose()
-        //{
-
-        //}
-
         /// <summary>
         /// 做好处理的连接管理
         /// </summary>
@@ -235,7 +229,6 @@ namespace HaoYueNet.ClientNetworkNet4x
             OnClose?.Invoke();
         }
 
-
         /// <summary>
         /// 主动关闭连接
         /// </summary>
@@ -243,7 +236,7 @@ namespace HaoYueNet.ClientNetworkNet4x
         {
             OnCloseReady();
         }
-
+        
         private void DataCallBackReady(byte[] data)
         {
 
@@ -277,7 +270,7 @@ namespace HaoYueNet.ClientNetworkNet4x
             while (true)
             {
                 byte[] buffer = new byte[1024 * 1024 * 2];
-                int effective = 0;
+                int effective=0;
                 try
                 {
                     effective = client.Receive(buffer);
@@ -286,7 +279,7 @@ namespace HaoYueNet.ClientNetworkNet4x
                         continue;
                     }
                 }
-                catch (Exception ex)
+                catch(Exception ex)
                 {
                     //远程主机强迫关闭了一个现有的连接
                     OnCloseReady();
@@ -344,7 +337,7 @@ namespace HaoYueNet.ClientNetworkNet4x
 
                             //用Span
                             Span<byte> getData_span = getData;
-                            getData_span = getData_span.Slice(StartIndex + 4, CoreLenght);
+                            getData_span = getData_span.Slice(StartIndex + 4,CoreLenght);
                             DataCallBackReady(getData_span.ToArray());
 
                             StartIndex += HeadLength;//当读取一条完整的数据后，读取数据的起始下标应为当前接受到的消息体的长度（当前数据的尾部或下一条消息的首部）
