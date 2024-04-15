@@ -5,7 +5,7 @@ using System.Net.Sockets;
 using System.Threading;
 using static HaoYueNet.ClientNetworkNet4x.BaseData;
 
-namespace HaoYueNet.ClientNetwork.OtherMode
+namespace HaoYueNet.ClientNetworkNet4x.OtherMode
 {
     public class NetworkHelperCore_SourceMode
     {

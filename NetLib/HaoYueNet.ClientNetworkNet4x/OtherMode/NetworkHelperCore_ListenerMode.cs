@@ -1,14 +1,13 @@
-﻿using System.Net;
-using System.Net.Sockets;
-using static HaoYueNet.ClientNetworkNet4x.BaseData;
+﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using System;
 using System.IO;
-using System.Threading;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace HaoYueNet.ClientNetwork.OtherMode
+namespace HaoYueNet.ClientNetworkNet4x.OtherMode
 {
     public class NetworkHelperCore_ListenerMode
     {
