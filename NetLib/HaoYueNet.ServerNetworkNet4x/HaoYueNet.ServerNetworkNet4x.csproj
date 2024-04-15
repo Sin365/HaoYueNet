@@ -7,8 +7,8 @@
     <ProjectGuid>{036F9BD9-308C-4194-AB40-C5952EF0E9F5}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>HaoYueNet.ServerNetworkNet4X</RootNamespace>
-    <AssemblyName>HaoYueNet.ServerNetworkNet4X</AssemblyName>
+    <RootNamespace>HaoYueNet.ServerNetworkNet4x</RootNamespace>
+    <AssemblyName>HaoYueNet.ServerNetworkNet4x</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
