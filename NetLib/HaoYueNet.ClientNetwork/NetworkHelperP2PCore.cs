@@ -24,7 +24,7 @@ namespace HaoYueNet.ClientNetwork
 
         private System.Timers.Timer _heartTimer;
 
-        public void Init(string IP, int port, bool bBindReuseAddress = false,int bBindport = 0)
+        public void Init(bool bBindReuseAddress = false,int bBindport = 0)
         {
 
             LogOut("==>初始化网络核心");
@@ -39,7 +39,6 @@ namespace HaoYueNet.ClientNetwork
                 IPEndPoint ipe = new IPEndPoint(IPAddress.Any, Convert.ToInt32(bBindport));
                 client.Bind(ipe);
             }
-            Connect(IP, port);
         }
 
         public bool Connect(string IP, int port)

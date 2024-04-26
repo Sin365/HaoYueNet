@@ -23,13 +23,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClientCore", "Simple\Client
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Client-Cli", "Simple\Client-Cli\Client-Cli.csproj", "{45FBC25D-9EC5-4C8E-A979-005F04CE76AB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HaoYueNet.ServerNetworkNet4x", "NetLib\HaoYueNet.ServerNetworkNet4x\HaoYueNet.ServerNetworkNet4x.csproj", "{036F9BD9-308C-4194-AB40-C5952EF0E9F5}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NetLib_Standard2", "NetLib_Standard2", "{F4C45C48-8011-4782-B0B3-99164D611A6C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HaoYueNet.ClientNetworkNet.Standard2", "NetLib_Standard2\HaoYueNet.ClientNetworkNet.Standard2\HaoYueNet.ClientNetworkNet.Standard2.csproj", "{16AF64F5-6BED-4BD5-AD41-39816AD56769}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HaoYueNet.ServerNetwork.Standard2", "NetLib_Standard2\HaoYueNet.ServerNetwork.Standard2\HaoYueNet.ServerNetwork.Standard2.csproj", "{6BACBAAB-3777-4165-A2F7-7F9B517286B4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HaoYueNet.ServerNetwork.Standard2", "NetLib_Standard2\HaoYueNet.ServerNetwork.Standard2\HaoYueNet.ServerNetwork.Standard2.csproj", "{6BACBAAB-3777-4165-A2F7-7F9B517286B4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HaoYueNet.ServerNetworkNet4x", "NetLib\HaoYueNet.ServerNetworkNet4x\HaoYueNet.ServerNetworkNet4x.csproj", "{036F9BD9-308C-4194-AB40-C5952EF0E9F5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -69,10 +69,6 @@ Global
 		{45FBC25D-9EC5-4C8E-A979-005F04CE76AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{45FBC25D-9EC5-4C8E-A979-005F04CE76AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{45FBC25D-9EC5-4C8E-A979-005F04CE76AB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{036F9BD9-308C-4194-AB40-C5952EF0E9F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{036F9BD9-308C-4194-AB40-C5952EF0E9F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{036F9BD9-308C-4194-AB40-C5952EF0E9F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{036F9BD9-308C-4194-AB40-C5952EF0E9F5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{16AF64F5-6BED-4BD5-AD41-39816AD56769}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{16AF64F5-6BED-4BD5-AD41-39816AD56769}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{16AF64F5-6BED-4BD5-AD41-39816AD56769}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -81,6 +77,10 @@ Global
 		{6BACBAAB-3777-4165-A2F7-7F9B517286B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6BACBAAB-3777-4165-A2F7-7F9B517286B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6BACBAAB-3777-4165-A2F7-7F9B517286B4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{036F9BD9-308C-4194-AB40-C5952EF0E9F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{036F9BD9-308C-4194-AB40-C5952EF0E9F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{036F9BD9-308C-4194-AB40-C5952EF0E9F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{036F9BD9-308C-4194-AB40-C5952EF0E9F5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -94,9 +94,9 @@ Global
 		{3F52D1D0-4B1E-4819-9AB3-A770DD5C505D} = {A2CAD164-0816-4D1D-9793-1B1F398C9D29}
 		{99E54CE5-4EF6-4441-9F40-8FDE8229041E} = {A2CAD164-0816-4D1D-9793-1B1F398C9D29}
 		{45FBC25D-9EC5-4C8E-A979-005F04CE76AB} = {A2CAD164-0816-4D1D-9793-1B1F398C9D29}
-		{036F9BD9-308C-4194-AB40-C5952EF0E9F5} = {D0066C06-A89A-4E05-80E0-D8232FB0FF3C}
 		{16AF64F5-6BED-4BD5-AD41-39816AD56769} = {F4C45C48-8011-4782-B0B3-99164D611A6C}
 		{6BACBAAB-3777-4165-A2F7-7F9B517286B4} = {F4C45C48-8011-4782-B0B3-99164D611A6C}
+		{036F9BD9-308C-4194-AB40-C5952EF0E9F5} = {D0066C06-A89A-4E05-80E0-D8232FB0FF3C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {22107F03-013F-4871-AC8E-F082694E2679}
