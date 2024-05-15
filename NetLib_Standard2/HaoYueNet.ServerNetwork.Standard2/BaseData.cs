@@ -55,7 +55,7 @@ namespace HaoYueNet.ServerNetwork.Standard2
                 writeUInt16(BufferData, 4, CmdID);
 
                 //Error
-                writeUInt16(BufferData, 4 + 2, CmdID);
+                writeUInt16(BufferData, 4 + 2, Error);
 
                 //DATA
                 Buffer.BlockCopy(AddonBytes_Data, 0, BufferData, 4 + 2 + 2, AddonBytes_Data.Length);
