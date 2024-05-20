@@ -1,16 +1,16 @@
 # HaoYueNet
 
-.Net 8 的，自建基于IOCP的TCP的高性能网络库
+.Net 8 / .Net Standard2.0 的，泛用形自建高性能网络库
 
-使用Protobuff作为基础协议(网络库本身不依赖Protobuff，仅上层示例依赖）
+基于IOCP进一步深度优化而来
 
-网络库本身无依赖，可以用于任何数据通讯
-
-包含服务端和客户端双端库，可直接用于各类.Net程序或Unity程序，做TCP通讯底层库。
-
-并包含心跳包等检测、连接管理、Protobuff解析，优化后的高性能收发等等。
+网络库本身无依赖，可以用于任何数据通讯 (网络库本身不依赖Protobuff，仅上层示例依赖）
 
 不用关心网络底层，直接引用或继承，即可便捷使用。
+
+示例demo中，包含服务端和客户端双端库，可直接用于各类.Net版本程序或Unity程序，做TCP通讯底层库。
+
+并包含心跳包等检测、连接管理、Protobuff解析，优化后的高性能收发等等。
 
 #使用基础事件回调即可:
 
@@ -23,6 +23,7 @@ OnNetLog//来自网络库的日志信息
 OnReceive//收到网络数据
 
 #Simple目录下，有实例客户端和实例服务端
+
 示例中，使用本网络库，您可以继续示例项目写，也可以参照示例代码。
 
 实现了：
@@ -92,4 +93,4 @@ HaoYueNet.ServerNetwork.dll
 
 HaoYueNet.ClientNetwork.dll (.net7 推荐跨平台.net程序使用)
 
-HaoYueNet.ClientNetworkNet4x.dll (传统.Net4.X版本,用于传统.NetFX程序或Unity游戏，或Mono程序)
+HaoYueNet.ClientNetworkNet.Standard2.dll (.Net Standard 2.0标准的库，用于各种.Net运行时，传统.Net4.X版本,用于传统.NetFX程序或Unity游戏，或Mono程序)
