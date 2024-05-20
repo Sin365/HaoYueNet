@@ -1,6 +1,6 @@
 # HaoYueNet
 
-.Net 8 / .Net Standard2.0 的，泛用形自建高性能网络库
+.Net8/.NetStandard2.0 的，泛用形自建高性能网络库
 
 基于IOCP进一步深度优化而来
 
@@ -91,6 +91,6 @@ HaoYueNet.ServerNetwork.dll
 
 客户端
 
-HaoYueNet.ClientNetwork.dll (.net7 推荐跨平台.net程序使用)
+HaoYueNet.ClientNetwork.dll (.net8 推荐跨平台.net程序使用)
 
-HaoYueNet.ClientNetworkNet.Standard2.dll (.Net Standard 2.0标准的库，用于各种.Net运行时，传统.Net4.X版本,用于传统.NetFX程序或Unity游戏，或Mono程序)
+HaoYueNet.ClientNetworkNet.Standard2.dll (.NetStandard 2.0标准的库，用于各种.Net运行时，传统.Net4.X版本,用于传统.NetFX程序或Unity游戏，或Mono程序)
