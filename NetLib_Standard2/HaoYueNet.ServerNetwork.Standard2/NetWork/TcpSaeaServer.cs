@@ -457,6 +457,9 @@ namespace HaoYueNet.ServerNetwork.Standard2
                 }
                 else
                 {
+                    //尝试性，清理数据
+                    token.memoryStream.SetLength(0);
+                    token.memoryStream.Seek(0, SeekOrigin.Begin);
                     CloseClientSocket(e);
                 }
             }

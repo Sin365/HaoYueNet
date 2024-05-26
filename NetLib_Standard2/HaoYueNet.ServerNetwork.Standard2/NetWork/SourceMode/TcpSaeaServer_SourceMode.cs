@@ -1,6 +1,7 @@
 ﻿//using HunterProtobufCore;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -416,6 +417,9 @@ namespace HaoYueNet.ServerNetwork.Standard2
                 }
                 else
                 {
+                    //尝试性，清理数据
+                    token.memoryStream.SetLength(0);
+                    token.memoryStream.Seek(0, SeekOrigin.Begin);
                     CloseClientSocket(e);
                 }
             }
