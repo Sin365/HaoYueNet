@@ -189,39 +189,45 @@ namespace HaoYueNet.ClientNetwork.OtherMode
             OnReceive(socket,data);
         }
 
+        MemoryStream reciveMemoryStream = new MemoryStream();//开辟一个内存流
+        byte[] reciveBuffer = new byte[1024 * 1024 * 2];
         private void Recive(object o)
         {
-            MemoryStream memoryStream = new MemoryStream();//开辟一个内存流
             var client = o as Socket;
-            //MemoryStream memoryStream = new MemoryStream();//开辟一个内存流
 
             while (true)
             {
-                byte[] buffer = new byte[1024 * 1024 * 2];
                 int effective = 0;
                 try
                 {
-                    effective = client.Receive(buffer);
-                    if (effective == 0)
+                    effective = client.Receive(reciveBuffer);
+                    if (effective == 0)//为0表示已经断开连接，放到后面处理
                     {
-                        continue;
+                        //清理数据
+                        reciveMemoryStream.SetLength(0);
+                        reciveMemoryStream.Seek(0, SeekOrigin.Begin);
+                        //远程主机强迫关闭了一个现有的连接
+                        OnCloseReady(client);
+                        return;
                     }
                 }
                 catch (Exception ex)
                 {
+                    //清理数据
+                    reciveMemoryStream.SetLength(0);
+                    reciveMemoryStream.Seek(0, SeekOrigin.Begin);
+
                     //远程主机强迫关闭了一个现有的连接
                     OnCloseReady(client);
                     return;
                     //断开连接
                 }
-                if (effective > 0)//如果接受到的消息不为0（不为空）
-                {
-                    memoryStream.Write(buffer, 0, effective);//将接受到的数据写入内存流中
-                    DataCallBackReady(client, memoryStream.ToArray());
-                    //流复用的方式 不用重新new申请
-                    memoryStream.Position = 0;
-                    memoryStream.SetLength(0);
-                }
+
+                reciveMemoryStream.Write(reciveBuffer, 0, effective);//将接受到的数据写入内存流中
+                DataCallBackReady(client, reciveMemoryStream.ToArray());
+                //流复用的方式 不用重新new申请
+                reciveMemoryStream.Position = 0;
+                reciveMemoryStream.SetLength(0);
             }
         }
 
