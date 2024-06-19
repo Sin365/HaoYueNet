@@ -23,11 +23,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Client-Cli", "Simple\Client
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NetLib_Standard2", "NetLib_Standard2", "{F4C45C48-8011-4782-B0B3-99164D611A6C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HaoYueNet.ClientNetworkNet.Standard2", "NetLib_Standard2\HaoYueNet.ClientNetworkNet.Standard2\HaoYueNet.ClientNetworkNet.Standard2.csproj", "{16AF64F5-6BED-4BD5-AD41-39816AD56769}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HaoYueNet.ClientNetwork.Standard2", "NetLib_Standard2\HaoYueNet.ClientNetworkNet.Standard2\HaoYueNet.ClientNetwork.Standard2.csproj", "{16AF64F5-6BED-4BD5-AD41-39816AD56769}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HaoYueNet.ServerNetwork.Standard2", "NetLib_Standard2\HaoYueNet.ServerNetwork.Standard2\HaoYueNet.ServerNetwork.Standard2.csproj", "{6BACBAAB-3777-4165-A2F7-7F9B517286B4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClientSaeaTest", "Simple\ClientSaeaTest\ClientSaeaTest.csproj", "{AE22B541-A21E-48F1-9913-C1ACEBF21874}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClientSaeaTest", "Simple\ClientSaeaTest\ClientSaeaTest.csproj", "{AE22B541-A21E-48F1-9913-C1ACEBF21874}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

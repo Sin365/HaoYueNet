@@ -244,41 +244,45 @@ namespace HaoYueNet.ClientNetwork
             OnDataCallBack(CmdID, Error, resultdata);
         }
 
-        MemoryStream memoryStream = new MemoryStream();//开辟一个内存流
+        MemoryStream reciveMemoryStream = new MemoryStream();//开辟一个内存流
+        byte[] reciveBuffer = new byte[1024 * 1024 * 2];
         private void Recive(object o)
         {
             var client = o as Socket;
-            //MemoryStream memoryStream = new MemoryStream();//开辟一个内存流
-
             while (true)
             {
-                byte[] buffer = new byte[1024 * 1024 * 2];
-                int effective=0;
+                int effective = 0;
                 try
                 {
-                    effective = client.Receive(buffer);
-                    if (effective == 0)
+                    effective = client.Receive(reciveBuffer);
+                    if (effective == 0)//为0表示已经断开连接
                     {
-                        continue;
+                        //清理数据
+                        reciveMemoryStream.SetLength(0);
+                        reciveMemoryStream.Seek(0, SeekOrigin.Begin);
+                        //远程主机强迫关闭了一个现有的连接
+                        OnCloseReady();
+                        return;
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
+                    //清理数据
+                    reciveMemoryStream.SetLength(0);
+                    reciveMemoryStream.Seek(0, SeekOrigin.Begin);
+
                     //远程主机强迫关闭了一个现有的连接
                     OnCloseReady();
                     return;
                     //断开连接
                 }
 
-
-                memoryStream.Write(buffer, 0, effective);//将接受到的数据写入内存流中
-                byte[] getData = memoryStream.ToArray();//将内存流中的消息体写入字节数组
+                reciveMemoryStream.Write(reciveBuffer, 0, effective);//将接受到的数据写入内存流中
+                byte[] getData = reciveMemoryStream.ToArray();//将内存流中的消息体写入字节数组
                 int StartIndex = 0;//设置一个读取数据的起始下标
 
                 while (true)
                 {
-
-
                     if (effective > 0)//如果接受到的消息不为0（不为空）
                     {
                         int HeadLength = 0;//包头长度（包头+包体）
@@ -302,10 +306,10 @@ namespace HaoYueNet.ClientNetwork
                             */
 
                             //流复用的方式 不用重新new申请
-                            memoryStream.Position = 0;
-                            memoryStream.SetLength(0);
+                            reciveMemoryStream.Position = 0;
+                            reciveMemoryStream.SetLength(0);
 
-                            memoryStream.Write(getData, StartIndex, getData.Length - StartIndex);//从新将接受的消息写入内存流
+                            reciveMemoryStream.Write(getData, StartIndex, getData.Length - StartIndex);//从新将接受的消息写入内存流
                             break;
                         }
                         else
@@ -314,6 +318,7 @@ namespace HaoYueNet.ClientNetwork
                             //DataCallBackReady(getData.Skip(StartIndex+4).Take(HeadLength-4).ToArray());
 
                             int CoreLenght = HeadLength - 4;
+
                             //改为Array.Copy 提升效率
                             //byte[] retData = new byte[CoreLenght];
                             //Array.Copy(getData, StartIndex + 4, retData, 0, CoreLenght);

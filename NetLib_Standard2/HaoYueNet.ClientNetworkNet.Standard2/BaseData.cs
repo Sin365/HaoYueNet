@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net.Sockets;
 
-namespace HaoYueNet.ClientNetworkNet.Standard2
+namespace HaoYueNet.ClientNetwork.Standard2
 {
     public static class BaseData
     {
