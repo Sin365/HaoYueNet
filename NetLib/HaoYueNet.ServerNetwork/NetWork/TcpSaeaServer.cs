@@ -1,4 +1,5 @@
 ﻿//using HunterProtobufCore;
+using HaoYueNet.ServerNetwork.NetWork;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -402,22 +403,28 @@ namespace HaoYueNet.ServerNetwork
                             //}
 
                             long FristBeginPos = token.memoryStream.Position;
-                            byte[] lenBytes = new byte[4];
-                            token.memoryStream.Seek(0, SeekOrigin.Begin);
+                            //byte[] lenBytes = new byte[4];
+                            byte[] lenBytes = ArrayPoolManager.RentByteArr(4);
+
+							token.memoryStream.Seek(0, SeekOrigin.Begin);
                             token.memoryStream.Read(lenBytes, 0, 4);
                             int packageLen = BitConverter.ToInt32(lenBytes, 0) - 4;
-                            if (packageLen > token.memoryStream.Length - 4)
+                            ArrayPoolManager.ReturnByteArr(lenBytes);
+
+
+							if (packageLen > token.memoryStream.Length - 4)
                             {
                                 token.memoryStream.Seek(FristBeginPos, SeekOrigin.Begin);
                                 //长度不够时,退出循环,让程序继续接收  
                                 break;
                             }
 
-                            ////包够长时,则提取出来,交给后面的程序去处理  
-                            //byte[] rev = token.Buffer.GetRange(4, packageLen).ToArray();
+							////包够长时,则提取出来,交给后面的程序去处理  
+							//byte[] rev = token.Buffer.GetRange(4, packageLen).ToArray();
 
-                            byte[] rev = new byte[packageLen];
-                            token.memoryStream.Seek(4, SeekOrigin.Begin);
+							byte[] rev = new byte[packageLen];
+
+							token.memoryStream.Seek(4, SeekOrigin.Begin);
                             token.memoryStream.Read(rev, 0, packageLen);
 
                             //从数据池中移除这组数据  

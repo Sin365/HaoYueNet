@@ -45,6 +45,7 @@ namespace HaoYueNet.ServerNetwork
                 int AllLenght = 4 + 2 + 2 + AddonBytes_Data.Length;
                 byte[] BufferData = new byte[AllLenght];
 
+				/*
                 //包长度
                 writeInt(BufferData, 0, AllLenght);
 
@@ -53,9 +54,17 @@ namespace HaoYueNet.ServerNetwork
 
                 //Error
                 writeUInt16(BufferData, 4 + 2, Error);
+                */
 
-                //DATA
-                Buffer.BlockCopy(AddonBytes_Data, 0, BufferData, 4 + 2 + 2, AddonBytes_Data.Length);
+
+				//包长度
+				Buffer.BlockCopy(BitConverter.GetBytes(AllLenght), 0, BufferData, 0, sizeof(int));
+				//CMDID
+				Buffer.BlockCopy(BitConverter.GetBytes(CmdID), 0, BufferData, 4, sizeof(UInt16));
+				//CMDID
+				Buffer.BlockCopy(BitConverter.GetBytes(Error), 0, BufferData, 4 + 2, sizeof(UInt16));
+				//DATA
+				Buffer.BlockCopy(AddonBytes_Data, 0, BufferData, 4 + 2 + 2, AddonBytes_Data.Length);
 
                 return BufferData;
             }
@@ -83,7 +92,7 @@ namespace HaoYueNet.ServerNetwork
             public static void SetDataToSocketAsyncEventArgs(SocketAsyncEventArgs myreadEventArgs, UInt16 CmdID, byte[] AddonBytes_Data)
             {
                 myreadEventArgs.SetBuffer(CreatePkgData(CmdID, AddonBytes_Data));
-            }
+			}
 
             public static byte[] CreatePkgData(UInt16 CmdID, byte[] AddonBytes_Data)
             {
