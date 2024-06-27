@@ -192,8 +192,8 @@ namespace HaoYueNet.ClientNetwork.OtherMode
             OnReceiveData(data);
         }
 
-        MemoryStream reciveMemoryStream = new MemoryStream();//开辟一个内存流
-        byte[] reciveBuffer = new byte[1024 * 1024 * 2];
+        MemoryStream reciveMemoryStream = new MemoryStream();//开辟一个反复使用的内存流
+        byte[] reciveBuffer = new byte[1024 * 1024 * 2];//开辟一个反复使用的byte[]
         private void Recive(object o)
         {
             var client = o as Socket;

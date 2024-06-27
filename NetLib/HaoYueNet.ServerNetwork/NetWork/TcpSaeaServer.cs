@@ -1,6 +1,5 @@
 ﻿//using HunterProtobufCore;
-using HaoYueNet.ServerNetwork.NetWork;
-using System.IO;
+using System.Buffers;
 using System.Net;
 using System.Net.Sockets;
 using static HaoYueNet.ServerNetwork.BaseData;
@@ -375,96 +374,67 @@ namespace HaoYueNet.ServerNetwork
         {
             try
             {
-                // check if the remote host closed the connection  
                 AsyncUserToken token = (AsyncUserToken)e.UserToken;
                 if (e.BytesTransferred > 0 && e.SocketError == SocketError.Success)
                 {
-                    //读取数据  
-                    //byte[] data = new byte[e.BytesTransferred];
-                    //Array.Copy(e.Buffer, e.Offset, data, 0, e.BytesTransferred);
-                    //lock (token.Buffer)
                     lock(token.memoryStream)
                     {
-                        //token.Buffer.AddRange(data);
                         token.memoryStream.Write(e.Buffer, e.Offset, e.BytesTransferred);
                         do
                         {
-                            //如果包头不完整
-                            //if (token.Buffer.Count < 4)
-                            if (token.memoryStream.Length < 4)
-                                break;
-
-                            ////判断包的长度
-                            //byte[] lenBytes = token.Buffer.GetRange(0, 4).ToArray();
-                            //int packageLen = BitConverter.ToInt32(lenBytes, 0) - 4;
-                            //if (packageLen > token.Buffer.Count - 4)
-                            //{   //长度不够时,退出循环,让程序继续接收  
-                            //    break;
-                            //}
-
+                            if (token.memoryStream.Length < 4) break;//包头不完整，继续接收
                             long FristBeginPos = token.memoryStream.Position;
-                            //byte[] lenBytes = new byte[4];
-                            byte[] lenBytes = ArrayPoolManager.RentByteArr(4);
+
+                            //从Byte池申请
+                            byte[] lenBytes = ArrayPool<byte>.Shared.Rent(4);
 
 							token.memoryStream.Seek(0, SeekOrigin.Begin);
                             token.memoryStream.Read(lenBytes, 0, 4);
                             int packageLen = BitConverter.ToInt32(lenBytes, 0) - 4;
-                            ArrayPoolManager.ReturnByteArr(lenBytes);
 
+                            //归还byte[]
+                            ArrayPool<byte>.Shared.Return(lenBytes);
 
 							if (packageLen > token.memoryStream.Length - 4)
                             {
                                 token.memoryStream.Seek(FristBeginPos, SeekOrigin.Begin);
-                                //长度不够时,退出循环,让程序继续接收  
-                                break;
+                                break;//长度不够时,退出循环,让程序继续接收  
                             }
 
-							////包够长时,则提取出来,交给后面的程序去处理  
-							//byte[] rev = token.Buffer.GetRange(4, packageLen).ToArray();
+                            //申请byte池 一定要记得回收!!
+                            byte[] rev_fromArrayPool = ArrayPool<byte>.Shared.Rent(packageLen);
 
-							byte[] rev = new byte[packageLen];
-
-							token.memoryStream.Seek(4, SeekOrigin.Begin);
-                            token.memoryStream.Read(rev, 0, packageLen);
-
-                            //从数据池中移除这组数据  
-                            //lock (token.Buffer)
-                            //{
-                            //    token.Buffer.RemoveRange(0, packageLen + 4);
-                            //}
-
+                            token.memoryStream.Seek(4, SeekOrigin.Begin);
+                            token.memoryStream.Read(rev_fromArrayPool, 0, packageLen);
                             token.memoryStream.Seek(FristBeginPos, SeekOrigin.Begin);
                             //从数据池中移除这组数据
                             lock (token.memoryStream)
                             {
-                                //token.memoryStream.Position = 0;
-                                //token.memoryStream.SetLength(0);
                                 int numberOfBytesToRemove = packageLen + 4;
                                 byte[] buf = token.memoryStream.GetBuffer();
                                 Buffer.BlockCopy(buf, numberOfBytesToRemove, buf, 0, (int)token.memoryStream.Length - numberOfBytesToRemove);
                                 token.memoryStream.SetLength(token.memoryStream.Length - numberOfBytesToRemove);
                             }
 
-                            DataCallBackReady(token, rev);
+                            //用Span内存切片，因为来自ArrayPool的byte长度，可能大于本身申请的长度
+                            Span<byte> rev_span = rev_fromArrayPool;
+                            rev_span = rev_span.Slice(0, packageLen);
+                            DataCallBackReady(token, rev_span);
 
-                            //这里API处理完后,并没有返回结果,当然结果是要返回的,却不是在这里, 这里的代码只管接收.  
-                            //若要返回结果,可在API处理中调用此类对象的SendMessage方法,统一打包发送.不要被微软的示例给迷惑了.  
-                        //} while (token.Buffer.Count > 4);
+                            //回收（这里依赖DataCallBackReady中，有一次数据拷贝，这个后续还要进一步精进性能优化，否则不能在这里回收，否则影响业务层）
+                            ArrayPool<byte>.Shared.Return(rev_fromArrayPool);
                         } while (token.memoryStream.Length > 4);
                     }
 
-                    //继续接收. 为什么要这么写,请看Socket.ReceiveAsync方法的说明  
+                    //如果返回为False则代表此刻已经完成，不必等待完成端口回调，则直接调用ProcessReceive
                     if (!token.Socket.ReceiveAsync(e))
-                    {
                         this.ProcessReceive(e);
-                    }
                 }
                 else
                 {
-                    //尝试性，清理数据
+                    //清理数据
                     token.memoryStream.SetLength(0);
                     token.memoryStream.Seek(0, SeekOrigin.Begin);
-
                     CloseClientSocket(e);
                 }
             }
@@ -489,8 +459,6 @@ namespace HaoYueNet.ServerNetwork
         }
         void IO_Completed(object sender, SocketAsyncEventArgs e)
         {
-            // determine which type of operation just completed and call the associated handler  
-
             switch (e.LastOperation)
             {
                 case SocketAsyncOperation.Receive:
@@ -661,7 +629,7 @@ namespace HaoYueNet.ServerNetwork
         #endregion
 
         #region 处理前预备
-        private void DataCallBackReady(AsyncUserToken sk, byte[] data)
+        private void DataCallBackReady(AsyncUserToken sk, Span<byte> data)
         {
             //增加接收计数
             sk.RevIndex = MaxRevIndexNum;

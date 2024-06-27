@@ -257,8 +257,8 @@ namespace HaoYueNet.ClientNetwork
             OnReceiveData(CmdID, Error, resultdata);
         }
 
-        MemoryStream reciveMemoryStream = new MemoryStream();//开辟一个内存流
-        byte[] reciveBuffer = new byte[1024 * 1024 * 2];
+        MemoryStream reciveMemoryStream = new MemoryStream();//开辟一个反复使用的内存流
+        byte[] reciveBuffer = new byte[1024 * 1024 * 2];//开辟一个反复使用的byte[]
         private void Recive(object o)
         {
             var client = o as Socket;
@@ -312,12 +312,6 @@ namespace HaoYueNet.ClientNetwork
                         //↓↓↓↓↓↓↓↓                            ↓↓↓
                         if (getData.Length - StartIndex < HeadLength || HeadLength == -1)
                         {
-                            /* 一种清空流的方式
-                            memoryStream.Close();//关闭内存流
-                            memoryStream.Dispose();//释放内存资源
-                            memoryStream = new MemoryStream();//创建新的内存流
-                            */
-
                             //流复用的方式 不用重新new申请
                             reciveMemoryStream.Position = 0;
                             reciveMemoryStream.SetLength(0);
@@ -327,16 +321,7 @@ namespace HaoYueNet.ClientNetwork
                         }
                         else
                         {
-                            //把头去掉，就可以吃了，蛋白质是牛肉的六倍
-                            //DataCallBackReady(getData.Skip(StartIndex+4).Take(HeadLength-4).ToArray());
-
                             int CoreLenght = HeadLength - 4;
-
-                            //改为Array.Copy 提升效率
-                            //byte[] retData = new byte[CoreLenght];
-                            //Array.Copy(getData, StartIndex + 4, retData, 0, CoreLenght);
-                            //DataCallBackReady(retData);
-
                             //用Span
                             Span<byte> getData_span = getData;
                             getData_span = getData_span.Slice(StartIndex + 4, CoreLenght);

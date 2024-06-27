@@ -1,4 +1,5 @@
 ﻿using System.Net.Sockets;
+using System.Runtime.InteropServices;
 
 namespace HaoYueNet.ServerNetwork
 {
@@ -142,7 +143,7 @@ namespace HaoYueNet.ServerNetwork
                 return BufferData;
             }
 
-            public static void AnalysisPkgData(Span<byte> srcdata, out UInt16 CmdID, out byte[] data)
+            public static void AnalysisPkgData(Span<byte> srcdata,out UInt16 CmdID, out byte[] data)
             {
                 //data = new byte[srcdata.Length - 2];
                 //CmdID = BitConverter.ToUInt16(srcdata, 0);

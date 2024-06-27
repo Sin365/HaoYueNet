@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Buffers;
+using System.Net;
 using System.Net.Sockets;
 using static HaoYueNet.ClientNetwork.BaseData;
 
@@ -190,17 +191,20 @@ namespace HaoYueNet.ClientNetwork.OtherMode
         }
 
         MemoryStream reciveMemoryStream = new MemoryStream();//开辟一个内存流
-        byte[] reciveBuffer = new byte[1024 * 1024 * 2];
+        //byte[] reciveBuffer = new byte[1024 * 1024 * 2];
         private void Recive(object o)
         {
             var client = o as Socket;
 
             while (true)
             {
+                //申请byte池 一定要记得回收!!
+                byte[] rev_fromArrayPool = ArrayPool<byte>.Shared.Rent(1024 * 1024 * 2);
+
                 int effective = 0;
                 try
                 {
-                    effective = client.Receive(reciveBuffer);
+                    effective = client.Receive(rev_fromArrayPool);
                     if (effective == 0)//为0表示已经断开连接，放到后面处理
                     {
                         //清理数据
@@ -208,6 +212,8 @@ namespace HaoYueNet.ClientNetwork.OtherMode
                         reciveMemoryStream.Seek(0, SeekOrigin.Begin);
                         //远程主机强迫关闭了一个现有的连接
                         OnCloseReady(client);
+                        //回收
+                        ArrayPool<byte>.Shared.Return(rev_fromArrayPool);
                         return;
                     }
                 }
@@ -223,7 +229,11 @@ namespace HaoYueNet.ClientNetwork.OtherMode
                     //断开连接
                 }
 
-                reciveMemoryStream.Write(reciveBuffer, 0, effective);//将接受到的数据写入内存流中
+                reciveMemoryStream.Write(rev_fromArrayPool, 0, effective);//将接受到的数据写入内存流中
+
+                //回收
+                ArrayPool<byte>.Shared.Return(rev_fromArrayPool);
+
                 DataCallBackReady(client, reciveMemoryStream.ToArray());
                 //流复用的方式 不用重新new申请
                 reciveMemoryStream.Position = 0;
