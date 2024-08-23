@@ -9,7 +9,6 @@ namespace HaoYueNet.ClientNetwork
     {
         private Socket client;
 
-
         ////响应倒计时计数最大值
         //private static int MaxRevIndexNum = 6;
 
@@ -157,26 +156,6 @@ namespace HaoYueNet.ClientNetwork
             }
         }
 
-        ////拼接头长度
-        //private byte[] SendDataWithHead(byte[] message)
-        //{
-
-        //    MemoryStream memoryStream = new MemoryStream();//创建一个内存流
-
-        //    byte[] BagHead = BitConverter.GetBytes(message.Length + 4);//往字节数组中写入包头（包头自身的长度和消息体的长度）的长度
-
-        //    memoryStream.Write(BagHead, 0, BagHead.Length);//将包头写入内存流
-
-        //    memoryStream.Write(message, 0, message.Length);//将消息体写入内存流
-
-        //    byte[] HeadAndBody = memoryStream.ToArray();//将内存流中的数据写入字节数组
-
-        //    memoryStream.Close();//关闭内存
-        //    memoryStream.Dispose();//释放资源
-
-        //    return HeadAndBody;
-        //}
-
         /// <summary>
         /// 供外部调用 发送消息
         /// </summary>
@@ -184,13 +163,6 @@ namespace HaoYueNet.ClientNetwork
         /// <param name="data">序列化之后的数据</param>
         public void SendToServer(int CMDID,byte[] data)
         {
-            //LogOut("准备数据 CMDID=> "+CMDID);
-            /*
-            HunterNet_C2S _c2sdata = new HunterNet_C2S();
-            _c2sdata.HunterNetCoreCmdID = CMDID;
-            _c2sdata.HunterNetCoreData = ByteString.CopyFrom(data);
-            byte[] _finaldata = Serizlize(_c2sdata);
-            */
             byte[] _finaldata = HunterNet_C2S.CreatePkgData((ushort)CMDID, data);
             SendToSocket(_finaldata);
         }
@@ -246,12 +218,6 @@ namespace HaoYueNet.ClientNetwork
                 //LogOut("收到心跳包");
                 return;
             }
-
-            /*
-            HunterNet_S2C _c2s = DeSerizlize<HunterNet_S2C>(data);
-
-            OnReceiveData(_c2s.HunterNetCoreCmdID, _c2s.HunterNetCoreERRORCode, _c2s.HunterNetCoreData.ToArray());
-            */
 
             HunterNet_S2C.AnalysisPkgData(data, out ushort CmdID, out ushort Error, out byte[] resultdata);
             OnReceiveData(CmdID, Error, resultdata);
@@ -359,7 +325,6 @@ namespace HaoYueNet.ClientNetwork
 
         public void LogOut(string Msg)
         {
-            //Console.WriteLine(Msg);
             OnLogOut?.Invoke(Msg);
         }
 

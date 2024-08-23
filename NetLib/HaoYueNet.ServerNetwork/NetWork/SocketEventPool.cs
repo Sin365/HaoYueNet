@@ -2,7 +2,6 @@
 
 namespace HaoYueNet.ServerNetwork
 {
-
     public class SocketEventPool
     {
         Stack<SocketAsyncEventArgs> m_pool;

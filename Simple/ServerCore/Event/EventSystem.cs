@@ -202,14 +202,21 @@ namespace ServerCore.Event
         /// <returns></returns>
         private List<Delegate> GetEventList(EEvent evt)
         {
-            if (eventDic.ContainsKey(evt))
+            if (eventDic.TryGetValue(evt, out List<Delegate> dlist))
             {
-                List<Delegate> tempList = eventDic[evt];
-                if (null != tempList)
+                if (null != dlist)
                 {
-                    return tempList;
+                    return dlist;
                 }
             }
+            //if (eventDic.ContainsKey(evt))
+            //{
+            //    List<Delegate> tempList = eventDic[evt];
+            //    if (null != tempList)
+            //    {
+            //        return tempList;
+            //    }
+            //}
             return null;
         }
     }

@@ -227,7 +227,11 @@ namespace HaoYueNet.ClientNetwork.IOCPMode
         #region Token管理
         public AsyncUserToken GetAsyncUserTokenForSocket(Socket sk)
         {
-            return _DictSocketAsyncUserToken.ContainsKey(sk) ? _DictSocketAsyncUserToken[sk] : null;
+            AsyncUserToken result;
+            if (_DictSocketAsyncUserToken.TryGetValue(sk, out result))
+                return result;
+            return null;
+            //return _DictSocketAsyncUserToken.ContainsKey(sk) ? _DictSocketAsyncUserToken[sk] : null;
         }
         void AddUserToken(AsyncUserToken userToken)
         {
@@ -283,7 +287,6 @@ namespace HaoYueNet.ClientNetwork.IOCPMode
 
 
         #region 连接
-
         public void StartConnect(string ip, int port, Socket socket, SocketAsyncEventArgs connectEventArg = null)
         {
             if (connectEventArg == null)

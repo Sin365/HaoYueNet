@@ -63,17 +63,29 @@
 
         private void InterRegisterEvent(EEvent evt, Delegate callback)
         {
-            if (eventDic.ContainsKey(evt))
+            if (eventDic.TryGetValue(evt, out List<Delegate> dlist))
             {
-                if (eventDic[evt].IndexOf(callback) < 0)
+                if (dlist.IndexOf(callback) < 0)
                 {
-                    eventDic[evt].Add(callback);
+                    dlist.Add(callback);
                 }
             }
             else
-            {
+            { 
                 eventDic.Add(evt, new List<Delegate>() { callback });
             }
+
+            //if (eventDic.ContainsKey(evt))
+            //{
+            //    if (eventDic[evt].IndexOf(callback) < 0)
+            //    {
+            //        eventDic[evt].Add(callback);
+            //    }
+            //}
+            //else
+            //{
+            //    eventDic.Add(evt, new List<Delegate>() { callback });
+            //}
         }
         #endregion
 
@@ -111,11 +123,16 @@
 
         private void InterUnregisterEvent(EEvent evt, Delegate callback)
         {
-            if (eventDic.ContainsKey(evt))
+            if (eventDic.TryGetValue(evt, out List<Delegate> dlist))
             {
-                eventDic[evt].Remove(callback);
-                if (eventDic[evt].Count == 0) eventDic.Remove(evt);
+                dlist.Remove(callback);
+                if (dlist.Count == 0) eventDic.Remove(evt);
             }
+            //if (eventDic.ContainsKey(evt))
+            //{
+            //    eventDic[evt].Remove(callback);
+            //    if (eventDic[evt].Count == 0) eventDic.Remove(evt);
+            //}
         }
         #endregion
 
@@ -224,14 +241,21 @@
         /// <returns></returns>
         private List<Delegate> GetEventList(EEvent evt)
         {
-            if (eventDic.ContainsKey(evt))
+            if (eventDic.TryGetValue(evt,out List<Delegate> dlist))
             {
-                List<Delegate> tempList = eventDic[evt];
-                if (null != tempList)
+                if (null != dlist)
                 {
-                    return tempList;
+                    return dlist;
                 }
             }
+            //if (eventDic.ContainsKey(evt))
+            //{
+            //    List<Delegate> tempList = eventDic[evt];
+            //    if (null != tempList)
+            //    {
+            //        return tempList;
+            //    }
+            //}
             return null;
         }
     }

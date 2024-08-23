@@ -124,26 +124,6 @@ namespace HaoYueNet.ClientNetwork
             client.Send(data);
         }
 
-        ////拼接头长度
-        //private byte[] SendDataWithHead(byte[] message)
-        //{
-
-        //    MemoryStream memoryStream = new MemoryStream();//创建一个内存流
-
-        //    byte[] BagHead = BitConverter.GetBytes(message.Length + 4);//往字节数组中写入包头（包头自身的长度和消息体的长度）的长度
-
-        //    memoryStream.Write(BagHead, 0, BagHead.Length);//将包头写入内存流
-
-        //    memoryStream.Write(message, 0, message.Length);//将消息体写入内存流
-
-        //    byte[] HeadAndBody = memoryStream.ToArray();//将内存流中的数据写入字节数组
-
-        //    memoryStream.Close();//关闭内存
-        //    memoryStream.Dispose();//释放资源
-
-        //    return HeadAndBody;
-        //}
-
         /// <summary>
         /// 供外部调用 发送消息
         /// </summary>
@@ -152,13 +132,6 @@ namespace HaoYueNet.ClientNetwork
         /// <param name="data"></param>
         public void SendToSocket(int CMDID, int ERRCODE, byte[] data)
         {
-            //LogOut("准备数据 CMDID=> "+CMDID);
-            /*HunterNet_S2C _s2sdata = new HunterNet_S2C();
-            _s2sdata.HunterNetCoreCmdID = CMDID;
-            _s2sdata.HunterNetCoreERRORCode = ERRCODE;
-            _s2sdata.HunterNetCoreData = ByteString.CopyFrom(data);
-            byte[] _finaldata = Serizlize(_s2sdata);*/
-
             byte[] _finaldata = HunterNet_S2C.CreatePkgData((ushort)CMDID, (ushort)ERRCODE, data);
             SendToSocket(_finaldata);
         }
@@ -324,7 +297,6 @@ namespace HaoYueNet.ClientNetwork
 
         public void LogOut(string Msg)
         {
-            //Console.WriteLine(Msg);
             OnLogOut(Msg);
         }
 

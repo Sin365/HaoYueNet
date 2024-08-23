@@ -1,8 +1,5 @@
-﻿using System.Net.Sockets;
-
-namespace HaoYueNet.ServerNetwork
+﻿namespace HaoYueNet.ServerNetwork
 {
-
     public class MemoryStreamPool
     {
         Stack<MemoryStream> m_pool;

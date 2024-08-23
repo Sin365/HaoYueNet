@@ -30,16 +30,10 @@ namespace HaoYueNet.ServerNetwork
         /// </summary>  
         public object UserInfo { get; set; }
 
-        /// <summary>  
-        /// 数据缓存区  
-        /// </summary>  
-        //public List<byte> Buffer { get; set; }
-
         public MemoryStream memoryStream { get; set; }
 
         public AsyncUserToken()
         {
-            //this.Buffer = new List<byte>();
             this.memoryStream = new MemoryStream();
         }
         /// <summary>

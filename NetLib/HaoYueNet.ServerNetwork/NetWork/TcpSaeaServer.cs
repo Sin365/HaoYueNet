@@ -231,7 +231,11 @@ namespace HaoYueNet.ServerNetwork
         #region Token管理
         public AsyncUserToken GetAsyncUserTokenForSocket(Socket sk)
         {
-            return _DictSocketAsyncUserToken.ContainsKey(sk) ? _DictSocketAsyncUserToken[sk] : null;
+            AsyncUserToken result;
+            if (_DictSocketAsyncUserToken.TryGetValue(sk, out result))
+                return result;
+            return null;
+            //return _DictSocketAsyncUserToken.ContainsKey(sk) ? _DictSocketAsyncUserToken[sk] : null;
         }
         void AddUserToken(AsyncUserToken userToken)
         {

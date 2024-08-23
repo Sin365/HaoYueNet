@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
-using System.Text;
-
-namespace HaoYueNet.ServerNetwork
+﻿namespace HaoYueNet.ServerNetwork
 {
     public class TokenWithMsg_SourceMode
     {
@@ -15,7 +9,6 @@ namespace HaoYueNet.ServerNetwork
 
     public class TokenMsgPool_SourceMode
     {
-        //Stack<TokenWithMsg> msg_pool;
         Queue<TokenWithMsg_SourceMode> msg_pool;
 
         public TokenMsgPool_SourceMode(int capacity)

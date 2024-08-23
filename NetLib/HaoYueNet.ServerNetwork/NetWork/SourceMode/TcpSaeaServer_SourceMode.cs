@@ -1,6 +1,4 @@
-﻿//using HunterProtobufCore;
-using System.IO;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 using static HaoYueNet.ServerNetwork.BaseData;
 
@@ -231,7 +229,11 @@ namespace HaoYueNet.ServerNetwork
         #region Token管理
         public AsyncUserToken GetAsyncUserTokenForSocket(Socket sk)
         {
-            return _DictSocketAsyncUserToken.ContainsKey(sk) ? _DictSocketAsyncUserToken[sk] : null;
+            AsyncUserToken result;
+            if (_DictSocketAsyncUserToken.TryGetValue(sk,out result))
+                return result;
+            return null;
+            //return _DictSocketAsyncUserToken.ContainsKey(sk) ? _DictSocketAsyncUserToken[sk] : null;
         }
         void AddUserToken(AsyncUserToken userToken)
         {
@@ -604,59 +606,6 @@ namespace HaoYueNet.ServerNetwork
         {
             OnNetLog?.Invoke(msg);
         }
-        #endregion
-
-        #region 心跳包
-        /*
-        /// <summary>
-        /// 发送心跳包
-        /// </summary>
-        /// <param name="sk"></param>
-        /// 
-        private void SendHeartbeatWithIndex(AsyncUserToken token)
-        {
-            if (token == null || token.Socket == null || !token.Socket.Connected)
-                return;
-            try
-            {
-                //OutNetLog(DateTime.Now.ToString() + "发送心跳包");
-                token.SendIndex = MaxSendIndexNum;
-                SendHeartbeatMessage(token);
-            }
-            catch (Exception e)
-            {
-                CloseReady(token);
-            }
-        }
-        /// <summary>
-        /// 心跳包时钟事件
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void CheckUpdatetimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
-        {
-            for (int i = 0; i < m_clients.Count(); i++)
-            {
-                //接收服务器数据计数
-                m_clients[i].RevIndex--;
-                if (m_clients[i].RevIndex <= 0)
-                {
-                    //判定掉线
-                    CloseReady(m_clients[i]);
-                    return;
-                }
-
-                //发送计数
-                m_clients[i].SendIndex--;
-                if (m_clients[i].SendIndex <= 0)//需要发送心跳包了
-                {
-                    //重置倒计时计数
-                    m_clients[i].SendIndex = MaxSendIndexNum;
-                    SendHeartbeatWithIndex(m_clients[i]);
-                }
-            }
-        }
-        */
         #endregion
     }
 }

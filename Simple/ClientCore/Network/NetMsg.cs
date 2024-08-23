@@ -20,17 +20,28 @@
 
         private void InterRegNetMsgEvent(int cmd, Delegate callback)
         {
-            if (netEventDic.ContainsKey(cmd))
+            if (netEventDic.TryGetValue(cmd, out List<Delegate> dlist))
             {
-                if (netEventDic[cmd].IndexOf(callback) < 0)
+                if (dlist.IndexOf(callback) < 0)
                 {
-                    netEventDic[cmd].Add(callback);
+                    dlist.Add(callback);
                 }
             }
             else
             {
                 netEventDic.Add(cmd, new List<Delegate>() { callback });
             }
+            //if (netEventDic.ContainsKey(cmd))
+            //{
+            //    if (netEventDic[cmd].IndexOf(callback) < 0)
+            //    {
+            //        netEventDic[cmd].Add(callback);
+            //    }
+            //}
+            //else
+            //{
+            //    netEventDic.Add(cmd, new List<Delegate>() { callback });
+            //}
         }
         #endregion
 
@@ -44,11 +55,16 @@
 
         private void InterUnregisterCMD(int cmd, Delegate callback)
         {
-            if (netEventDic.ContainsKey(cmd))
+            if (netEventDic.TryGetValue(cmd, out List<Delegate> dlist))
             {
-                netEventDic[cmd].Remove(callback);
-                if (netEventDic[cmd].Count == 0) netEventDic.Remove(cmd);
+                dlist.Remove(callback);
+                if (dlist.Count == 0) netEventDic.Remove(cmd);
             }
+            //if (netEventDic.ContainsKey(cmd))
+            //{
+            //    netEventDic[cmd].Remove(callback);
+            //    if (netEventDic[cmd].Count == 0) netEventDic.Remove(cmd);
+            //}
         }
         #endregion
 
@@ -80,14 +96,22 @@
         /// <returns></returns>
         private List<Delegate> GetNetEventDicList(int cmd)
         {
-            if (netEventDic.ContainsKey(cmd))
+
+            if (netEventDic.TryGetValue(cmd, out List<Delegate> dlist))
             {
-                List<Delegate> tempList = netEventDic[cmd];
-                if (null != tempList)
+                if (null != dlist)
                 {
-                    return tempList;
+                    return dlist;
                 }
             }
+            //if (netEventDic.ContainsKey(cmd))
+            //{
+            //    List<Delegate> tempList = netEventDic[cmd];
+            //    if (null != tempList)
+            //    {
+            //        return tempList;
+            //    }
+            //}
             return null;
         }
     }
