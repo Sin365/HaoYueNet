@@ -24,15 +24,13 @@ namespace HaoYueNet.ClientNetwork
 
         private System.Timers.Timer _heartTimer;
 
-        public void Init(bool bBindReuseAddress = false,int bBindport = 0)
+        public void Init(bool bBindReuseAddress = false,int bBindport = 0, AddressFamily addressFamily = AddressFamily.InterNetwork)
         {
-
             LogOut("==>初始化网络核心");
-
             RevIndex = MaxRevIndexNum;
             SendIndex = MaxSendIndexNum;
 
-            client = new Socket(SocketType.Stream, ProtocolType.Tcp);
+            client = new Socket(addressFamily,SocketType.Stream, ProtocolType.Tcp);
             if (bBindReuseAddress)
             {
                 client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);

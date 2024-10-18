@@ -8,7 +8,7 @@ namespace HaoYueNet.ClientNetwork.OtherMode
     public class NetworkHelperCore_ListenerMode
     {
         private Socket serversocket;
-        private Dictionary<nint,Socket> mDictHandleClient;
+        private Dictionary<nint, Socket> mDictHandleClient;
 
         //响应倒计时计数最大值
         private static int MaxRevIndexNum = 50;
@@ -27,12 +27,12 @@ namespace HaoYueNet.ClientNetwork.OtherMode
         public static int LastConnectPort;
         public bool bDetailedLog = false;
 
-        public void Init(int port)
+        public void Init(int port, AddressFamily addressFamily = AddressFamily.InterNetwork)
         {
             mDictHandleClient = new Dictionary<nint, Socket>();
 
             LogOut("==>初始化NetworkHelperCore_ListenerMode");
-            serversocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            serversocket = new Socket(addressFamily, SocketType.Stream, ProtocolType.Tcp);
             IPEndPoint endPoint = new IPEndPoint(IPAddress.Any, port);
             serversocket.Bind(endPoint);                 // 绑定
             serversocket.Listen(1);
@@ -98,7 +98,7 @@ namespace HaoYueNet.ClientNetwork.OtherMode
         ~NetworkHelperCore_ListenerMode()
         {
             nint[] keys = mDictHandleClient.Keys.ToArray();
-            for (uint i = 0; i < keys.Length; i++) 
+            for (uint i = 0; i < keys.Length; i++)
             {
                 mDictHandleClient[keys[i]].Close();
             }
@@ -111,7 +111,7 @@ namespace HaoYueNet.ClientNetwork.OtherMode
             //data = SendDataWithHead(data);
             try
             {
-                SendWithIndex(socket,data);
+                SendWithIndex(socket, data);
             }
             catch (Exception ex)
             {
@@ -126,7 +126,7 @@ namespace HaoYueNet.ClientNetwork.OtherMode
         /// 发送数据并计数
         /// </summary>
         /// <param name="data"></param>
-        private void SendWithIndex(Socket socket,byte[] data)
+        private void SendWithIndex(Socket socket, byte[] data)
         {
             //增加发送计数
             SendIndex = MaxSendIndexNum;
@@ -183,11 +183,11 @@ namespace HaoYueNet.ClientNetwork.OtherMode
             OnCloseReady(socket);
         }
 
-        private void DataCallBackReady(Socket socket,byte[] data)
+        private void DataCallBackReady(Socket socket, byte[] data)
         {
             //增加接收计数
             RevIndex = MaxRevIndexNum;
-            OnReceive(socket,data);
+            OnReceive(socket, data);
         }
 
         MemoryStream reciveMemoryStream = new MemoryStream();//开辟一个内存流

@@ -32,7 +32,7 @@ namespace HaoYueNet.ClientNetwork.OtherMode
         public static int LastConnectPort;
         public bool bDetailedLog = false;
 
-        public bool Init(string IP, int port, bool isHadDetailedLog = true, bool bBindReuseAddress = false, int bBindport = 0)
+        public bool Init(string IP, int port, bool isHadDetailedLog = true, bool bBindReuseAddress = false, int bBindport = 0, AddressFamily addressFamily = AddressFamily.InterNetwork)
         {
             LogOut("==>初始化网络核心");
 
@@ -40,7 +40,7 @@ namespace HaoYueNet.ClientNetwork.OtherMode
             RevIndex = MaxRevIndexNum;
             SendIndex = MaxSendIndexNum;
 
-            client = new Socket(SocketType.Stream, ProtocolType.Tcp);
+            client = new Socket(addressFamily, SocketType.Stream, ProtocolType.Tcp);
             if (bBindReuseAddress)
             {
                 client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
