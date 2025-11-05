@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -6,13 +7,14 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using static HaoYueNet.ClientNetwork.BaseData;
 
-namespace HaoYueNet.ClientNetwork.Standard2.OtherMode
+namespace HaoYueNet.ClientNetwork.OtherMode
 {
     public class NetworkHelperCore_ListenerMode
     {
         private Socket serversocket;
-        private Dictionary<nint, Socket> mDictHandleClient;
+        private Dictionary<IntPtr, Socket> mDictHandleClient;
 
         //响应倒计时计数最大值
         private static int MaxRevIndexNum = 50;
@@ -31,12 +33,12 @@ namespace HaoYueNet.ClientNetwork.Standard2.OtherMode
         public static int LastConnectPort;
         public bool bDetailedLog = false;
 
-        public void Init(int port)
+        public void Init(int port, AddressFamily addressFamily = AddressFamily.InterNetwork)
         {
-            mDictHandleClient = new Dictionary<nint, Socket>();
+            mDictHandleClient = new Dictionary<IntPtr, Socket>();
 
             LogOut("==>初始化NetworkHelperCore_ListenerMode");
-            serversocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            serversocket = new Socket(addressFamily, SocketType.Stream, ProtocolType.Tcp);
             IPEndPoint endPoint = new IPEndPoint(IPAddress.Any, port);
             serversocket.Bind(endPoint);                 // 绑定
             serversocket.Listen(1);
@@ -101,7 +103,7 @@ namespace HaoYueNet.ClientNetwork.Standard2.OtherMode
 
         ~NetworkHelperCore_ListenerMode()
         {
-            nint[] keys = mDictHandleClient.Keys.ToArray();
+            IntPtr[] keys = mDictHandleClient.Keys.ToArray();
             for (uint i = 0; i < keys.Length; i++)
             {
                 mDictHandleClient[keys[i]].Close();
@@ -195,17 +197,20 @@ namespace HaoYueNet.ClientNetwork.Standard2.OtherMode
         }
 
         MemoryStream reciveMemoryStream = new MemoryStream();//开辟一个内存流
-        byte[] reciveBuffer = new byte[1024 * 1024 * 2];
+        //byte[] reciveBuffer = new byte[1024 * 1024 * 2];
         private void Recive(object o)
         {
             var client = o as Socket;
 
             while (true)
             {
+                //申请byte池 一定要记得回收!!
+                byte[] rev_fromArrayPool = ArrayPool<byte>.Shared.Rent(1024 * 1024 * 2);
+
                 int effective = 0;
                 try
                 {
-                    effective = client.Receive(reciveBuffer);
+                    effective = client.Receive(rev_fromArrayPool);
                     if (effective == 0)//为0表示已经断开连接，放到后面处理
                     {
                         //清理数据
@@ -213,6 +218,8 @@ namespace HaoYueNet.ClientNetwork.Standard2.OtherMode
                         reciveMemoryStream.Seek(0, SeekOrigin.Begin);
                         //远程主机强迫关闭了一个现有的连接
                         OnCloseReady(client);
+                        //回收
+                        ArrayPool<byte>.Shared.Return(rev_fromArrayPool);
                         return;
                     }
                 }
@@ -228,7 +235,11 @@ namespace HaoYueNet.ClientNetwork.Standard2.OtherMode
                     //断开连接
                 }
 
-                reciveMemoryStream.Write(reciveBuffer, 0, effective);//将接受到的数据写入内存流中
+                reciveMemoryStream.Write(rev_fromArrayPool, 0, effective);//将接受到的数据写入内存流中
+
+                //回收
+                ArrayPool<byte>.Shared.Return(rev_fromArrayPool);
+
                 DataCallBackReady(client, reciveMemoryStream.ToArray());
                 //流复用的方式 不用重新new申请
                 reciveMemoryStream.Position = 0;

@@ -3,9 +3,9 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
-using static HaoYueNet.ClientNetwork.Standard2.BaseData;
+using static HaoYueNet.ClientNetwork.BaseData;
 
-namespace HaoYueNet.ClientNetwork.Standard2.OtherMode
+namespace HaoYueNet.ClientNetwork.OtherMode
 {
     public class NetworkHelperCore_SourceMode
     {
@@ -35,7 +35,7 @@ namespace HaoYueNet.ClientNetwork.Standard2.OtherMode
         public static int LastConnectPort;
         public bool bDetailedLog = false;
 
-        public bool Init(string IP, int port, bool isHadDetailedLog = true, bool bBindReuseAddress = false, int bBindport = 0)
+        public bool Init(string IP, int port, bool isHadDetailedLog = true, bool bBindReuseAddress = false, int bBindport = 0, AddressFamily addressFamily = AddressFamily.InterNetwork)
         {
             LogOut("==>初始化网络核心");
 
@@ -43,7 +43,7 @@ namespace HaoYueNet.ClientNetwork.Standard2.OtherMode
             RevIndex = MaxRevIndexNum;
             SendIndex = MaxSendIndexNum;
 
-            client = new Socket(SocketType.Stream, ProtocolType.Tcp);
+            client = new Socket(addressFamily, SocketType.Stream, ProtocolType.Tcp);
             if (bBindReuseAddress)
             {
                 client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
@@ -195,8 +195,8 @@ namespace HaoYueNet.ClientNetwork.Standard2.OtherMode
             OnReceiveData(data);
         }
 
-        MemoryStream reciveMemoryStream = new MemoryStream();//开辟一个内存流
-        byte[] reciveBuffer = new byte[1024 * 1024 * 2];
+        MemoryStream reciveMemoryStream = new MemoryStream();//开辟一个反复使用的内存流
+        byte[] reciveBuffer = new byte[1024 * 1024 * 2];//开辟一个反复使用的byte[]
         private void Recive(object o)
         {
             var client = o as Socket;

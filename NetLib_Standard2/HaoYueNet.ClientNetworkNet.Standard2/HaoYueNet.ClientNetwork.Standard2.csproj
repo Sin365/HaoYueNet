@@ -6,4 +6,7 @@
 		<!--避免 错误	CS8630	无效的 nullable 值: C# 7.3 的“Enable”。请使用语言版本 8.0 或更高版本 -->
 		<LangVersion>8.0</LangVersion>
 	</PropertyGroup>
+	<ItemGroup>
+	  <PackageReference Include="System.Memory" Version="4.5.5" />
+	</ItemGroup>
 </Project>
