@@ -380,14 +380,14 @@ namespace HaoYueNet.ClientNetwork.IOCPMode
                             long FristBeginPos = token.memoryStream.Position;
 
                             //从Byte池申请
-                            byte[] lenBytes = ArrayPool<byte>.Shared.Rent(4);
+                            byte[] lenBytes = BytesArrayPool.RentBuffer(4);
 
                             token.memoryStream.Seek(0, SeekOrigin.Begin);
                             token.memoryStream.Read(lenBytes, 0, 4);
                             int packageLen = BitConverter.ToInt32(lenBytes, 0) - 4;
 
                             //归还byte[]
-                            ArrayPool<byte>.Shared.Return(lenBytes);
+                            BytesArrayPool.ReturnBuffer(lenBytes);
 
                             if (packageLen > token.memoryStream.Length - 4)
                             {
@@ -396,7 +396,7 @@ namespace HaoYueNet.ClientNetwork.IOCPMode
                             }
 
                             //申请byte池 一定要记得回收!!
-                            byte[] rev_fromArrayPool = ArrayPool<byte>.Shared.Rent(packageLen);
+                            byte[] rev_fromArrayPool = BytesArrayPool.RentBuffer(packageLen);
 
                             token.memoryStream.Seek(4, SeekOrigin.Begin);
                             token.memoryStream.Read(rev_fromArrayPool, 0, packageLen);
@@ -416,7 +416,7 @@ namespace HaoYueNet.ClientNetwork.IOCPMode
                             DataCallBackReady(token, rev_span);
 
                             //回收（这里依赖DataCallBackReady中，有一次数据拷贝，这个后续还要进一步精进性能优化，否则不能在这里回收，否则影响业务层）
-                            ArrayPool<byte>.Shared.Return(rev_fromArrayPool);
+                            BytesArrayPool.ReturnBuffer(rev_fromArrayPool);
                         } while (token.memoryStream.Length > 4);
                     }
 

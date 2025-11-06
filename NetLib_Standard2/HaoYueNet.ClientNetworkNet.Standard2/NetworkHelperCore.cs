@@ -25,9 +25,9 @@ namespace HaoYueNet.ClientNetwork
         private static int MaxSendIndexNum = 3;
 
         //响应倒计时计数
-        private static int RevIndex=0;
+        private static int RevIndex = 0;
         //发送倒计时计数
-        private static int SendIndex=0;
+        private static int SendIndex = 0;
 
         //计时器间隔
         private static int TimerInterval = 3000;
@@ -38,7 +38,7 @@ namespace HaoYueNet.ClientNetwork
         public static int LastConnectPort;
         public bool bDetailedLog = false;
 
-        public bool Init(string IP, int port,bool isHadDetailedLog = true, bool bBindReuseAddress = false,int bBindport = 0,AddressFamily addressFamily = AddressFamily.InterNetwork)
+        public bool Init(string IP, int port, bool isHadDetailedLog = true, bool bBindReuseAddress = false, int bBindport = 0, AddressFamily addressFamily = AddressFamily.InterNetwork)
         {
             LogOut("==>初始化网络核心");
 
@@ -63,7 +63,7 @@ namespace HaoYueNet.ClientNetwork
             //带回调的
             try
             {
-                if(bDetailedLog)
+                if (bDetailedLog)
                     LogOut("连接到远程IP " + IP + ":" + port);
                 else
                     LogOut("连接到远程服务");
@@ -111,13 +111,13 @@ namespace HaoYueNet.ClientNetwork
             client.Close();
         }
 
-        private void SendToSocket(byte[] data)
+        private void SendToSocket(byte[] data, int usefulLenght)
         {
             //已拼接包长度，这里不再需要拼接长度
             //data = SendDataWithHead(data);
             try
             {
-                SendWithIndex(data);
+                SendWithIndex(data, usefulLenght);
             }
             catch (Exception ex)
             {
@@ -132,7 +132,7 @@ namespace HaoYueNet.ClientNetwork
         {
             try
             {
-                SendWithIndex(HeartbeatData);
+                SendWithIndex(HeartbeatData, HeartbeatData.Length);
             }
             catch (Exception ex)
             {
@@ -148,14 +148,14 @@ namespace HaoYueNet.ClientNetwork
         /// 发送数据并计数
         /// </summary>
         /// <param name="data"></param>
-        private void SendWithIndex(byte[] data)
+        private void SendWithIndex(byte[] data, int usefulLenght)
         {
-            lock (sendLock) 
+            lock (sendLock)
             {
                 //增加发送计数
                 SendIndex = MaxSendIndexNum;
                 //发送数据
-                client.Send(data);
+                client.Send(data, usefulLenght, SocketFlags.None);
             }
         }
 
@@ -164,12 +164,33 @@ namespace HaoYueNet.ClientNetwork
         /// </summary>
         /// <param name="CMDID"></param>
         /// <param name="data">序列化之后的数据</param>
-        public void SendToServer(int CMDID,byte[] data)
+        public virtual void SendToServer(int CmdID, byte[] data)
         {
-            byte[] _finaldata = HunterNet_C2S.CreatePkgData((ushort)CMDID, data);
-            SendToSocket(_finaldata);
+            SendToServerWithLength(CmdID, ref data, data.Length);
+
+            //int allDataLength = HunterNet_C2S.GetAllLengthByBody(data);
+            //byte[] _finaldata = BytesArrayPool.RentBuffer(allDataLength);
+            //HunterNet_C2S.CreatePkgData((ushort)CmdID, data, ref _finaldata, out int usefulLenght);
+            //SendToSocket(_finaldata, usefulLenght);
+            //BytesArrayPool.ReturnBuffer(_finaldata);
+
+            //byte[] _finaldata = HunterNet_C2S.CreatePkgData((ushort)CmdID, data);
+            //SendToSocket(_finaldata);
         }
 
+        /// <summary>
+        /// 供外部调用 发送消息
+        /// </summary>
+        /// <param name="CMDID"></param>
+        /// <param name="data">序列化之后的数据</param>
+        public virtual void SendToServerWithLength(int CmdID, ref byte[] data, int len)
+        {
+            int allDataLength = HunterNet_C2S.GetAllLengthByUsedLen(len);
+            byte[] _finaldata = BytesArrayPool.RentBuffer(allDataLength);
+            HunterNet_C2S.CreatePkgData((ushort)CmdID, data, len, ref _finaldata, out int usefulLenght);
+            SendToSocket(_finaldata, usefulLenght);
+            BytesArrayPool.ReturnBuffer(_finaldata);
+        }
         #region 事件定义
         public delegate void OnReceiveDataHandler(int CMDID, int ERRCODE, byte[] data);
         public delegate void OnConnectedHandler(bool IsConnected);
@@ -208,7 +229,7 @@ namespace HaoYueNet.ClientNetwork
         {
             OnCloseReady();
         }
-        
+
         private void DataCallBackReady(byte[] data)
         {
 
@@ -247,7 +268,7 @@ namespace HaoYueNet.ClientNetwork
                         return;
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     //清理数据
                     reciveMemoryStream.SetLength(0);

@@ -205,7 +205,7 @@ namespace HaoYueNet.ClientNetwork.OtherMode
             while (true)
             {
                 //申请byte池 一定要记得回收!!
-                byte[] rev_fromArrayPool = ArrayPool<byte>.Shared.Rent(1024 * 1024 * 2);
+                byte[] rev_fromArrayPool = BytesArrayPool.RentBuffer(1024 * 1024 * 2);
 
                 int effective = 0;
                 try
@@ -219,7 +219,7 @@ namespace HaoYueNet.ClientNetwork.OtherMode
                         //远程主机强迫关闭了一个现有的连接
                         OnCloseReady(client);
                         //回收
-                        ArrayPool<byte>.Shared.Return(rev_fromArrayPool);
+                        BytesArrayPool.ReturnBuffer(rev_fromArrayPool);
                         return;
                     }
                 }
@@ -238,7 +238,7 @@ namespace HaoYueNet.ClientNetwork.OtherMode
                 reciveMemoryStream.Write(rev_fromArrayPool, 0, effective);//将接受到的数据写入内存流中
 
                 //回收
-                ArrayPool<byte>.Shared.Return(rev_fromArrayPool);
+                BytesArrayPool.ReturnBuffer(rev_fromArrayPool);
 
                 DataCallBackReady(client, reciveMemoryStream.ToArray());
                 //流复用的方式 不用重新new申请

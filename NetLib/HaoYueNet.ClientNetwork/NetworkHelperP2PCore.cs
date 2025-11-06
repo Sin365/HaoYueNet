@@ -15,22 +15,22 @@ namespace HaoYueNet.ClientNetwork
         private static int MaxSendIndexNum = 3;
 
         //响应倒计时计数
-        private static int RevIndex=0;
+        private static int RevIndex = 0;
         //发送倒计时计数
-        private static int SendIndex=0;
+        private static int SendIndex = 0;
 
         //计时器间隔
         private static int TimerInterval = 3000;
 
         private System.Timers.Timer _heartTimer;
 
-        public void Init(bool bBindReuseAddress = false,int bBindport = 0, AddressFamily addressFamily = AddressFamily.InterNetwork)
+        public void Init(bool bBindReuseAddress = false, int bBindport = 0, AddressFamily addressFamily = AddressFamily.InterNetwork)
         {
             LogOut("==>初始化网络核心");
             RevIndex = MaxRevIndexNum;
             SendIndex = MaxSendIndexNum;
 
-            client = new Socket(addressFamily,SocketType.Stream, ProtocolType.Tcp);
+            client = new Socket(addressFamily, SocketType.Stream, ProtocolType.Tcp);
             if (bBindReuseAddress)
             {
                 client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
@@ -78,13 +78,13 @@ namespace HaoYueNet.ClientNetwork
             client.Close();
         }
 
-        private void SendToSocket(byte[] data)
+        private void SendToSocket(byte[] data, int usefulLenght)
         {
             //已拼接包长度，这里不再需要拼接长度
             //data = SendDataWithHead(data);
             try
             {
-                SendWithIndex(data);
+                SendWithIndex(data, usefulLenght);
             }
             catch (Exception ex)
             {
@@ -99,7 +99,7 @@ namespace HaoYueNet.ClientNetwork
         {
             try
             {
-                SendWithIndex(BaseData.HeartbeatData);
+                SendWithIndex(BaseData.HeartbeatData, BaseData.HeartbeatData.Length);
             }
             catch (Exception ex)
             {
@@ -114,12 +114,12 @@ namespace HaoYueNet.ClientNetwork
         /// 发送数据并计数
         /// </summary>
         /// <param name="data"></param>
-        private void SendWithIndex(byte[] data)
+        private void SendWithIndex(byte[] data, int usefulLenght)
         {
             //增加发送计数
             SendIndex = MaxSendIndexNum;
             //发送数据
-            client.Send(data);
+            client.Send(data, usefulLenght, SocketFlags.None);
         }
 
         /// <summary>
@@ -130,8 +130,15 @@ namespace HaoYueNet.ClientNetwork
         /// <param name="data"></param>
         public void SendToSocket(int CMDID, int ERRCODE, byte[] data)
         {
-            byte[] _finaldata = HunterNet_S2C.CreatePkgData((ushort)CMDID, (ushort)ERRCODE, data);
-            SendToSocket(_finaldata);
+
+            int allDataLength = HunterNet_C2S.GetAllLengthByBody(data);
+            byte[] _finaldata = BytesArrayPool.RentBuffer(allDataLength);
+            HunterNet_S2C.CreatePkgData((ushort)CMDID, (ushort)ERRCODE, data, ref _finaldata, out int usefulLenght);
+            SendToSocket(_finaldata, usefulLenght);
+            BytesArrayPool.ReturnBuffer(_finaldata);
+
+            //byte[] _finaldata = HunterNet_S2C.CreatePkgData((ushort)CMDID, (ushort)ERRCODE, data);
+            //SendToSocket(_finaldata);
         }
 
         public delegate void OnDataCallBack_Data(int CMDID, int ERRCODE, byte[] data);
@@ -175,7 +182,7 @@ namespace HaoYueNet.ClientNetwork
         {
             OnCloseReady();
         }
-        
+
         private void DataCallBackReady(byte[] data)
         {
 
